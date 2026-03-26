@@ -1,0 +1,25 @@
+%% Main Business Flows - Tech Challenge Fase 04
+%% This diagram shows the main flows: feedback submission, urgent notification, and weekly report.
+%% Language: English
+
+sequenceDiagram
+    participant User as User (Student)
+    participant API as API Gateway / Serverless Function
+    participant DB as Managed Database
+    participant Notification as Notification Service
+    participant Admin as Admin/Analyst
+    participant Report as Report Service
+
+    %% Feedback Submission
+    User->>API: POST /avaliacao (feedback)
+    API->>DB: Store feedback
+    API-->>User: 201 Created (feedback stored)
+
+    %% Urgent Notification Flow
+    API->>Notification: Send urgent notification (if needed)
+    Notification-->>User: Notify user (urgent case)
+
+    %% Weekly Report Flow
+    API->>Report: Trigger weekly report (scheduled)
+    Report->>DB: Fetch feedback data
+    Report-->>Admin: Send weekly report

@@ -32,3 +32,23 @@
 ## Database Pattern
 - **Database per Service**: One Postgres database per microservice named `<service-name>-db`.
 - **Credentials**: Standardized `postgres`/`password` for Docker environments.
+
+## Deploy
+1. Set up the cloud environment (e.g., Azure Functions, AWS Lambda, GCP Cloud Functions)
+2. Create and configure the managed database
+3. Implement and deploy the serverless functions:
+    - Receive feedback
+    - Urgency notification
+    - Weekly report
+4. Configure triggers (HTTP, scheduling, etc.)
+5. Ensure permissions and security policies
+
+## Monitoring
+- Enable logs and metrics for the functions
+- Set up alerts for failures and critical executions
+- Validate the delivery of notifications and reports
+
+## Security
+- Restrict access to sensitive data
+- Implement access governance (IAM, RBAC, etc.)
+- Use environment variables for secrets and credentials

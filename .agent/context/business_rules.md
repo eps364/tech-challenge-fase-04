@@ -1,8 +1,18 @@
 # Business Rules - Tech Challenge Fase 04
 
-## Domain Logic
-- **Rich Domain Model**: Implementation of behavior directly in entities. 
-- **Immutability**: Favor immutable entities (e.g., using `withStatus` patterns)
-- **Client Identity**: Must be extracted from JWT tokens for all protected operations.
+# Serverless Functions
 
-# TODO: Atualizar a documentação de regras de negócio para refletir as mudanças da fase 04, incluindo novas regras e ajustes nas existentes.
+## Function: Receive Feedback
+- Trigger: HTTP (POST /avaliacao)
+- Responsibility: Receive, validate, and store feedback
+- Actions: Persist to database, trigger notification if urgent
+
+## Function: Urgency Notification
+- Trigger: Event (urgent feedback)
+- Responsibility: Send email/alert to administrators
+- Actions: Compose message, send via notification service
+
+## Function: Weekly Report
+- Trigger: Schedule (e.g., weekly cron)
+- Responsibility: Generate consolidated feedback report
+- Actions: Query database, calculate averages, send report
