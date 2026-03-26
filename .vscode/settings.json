@@ -1,0 +1,38 @@
+{
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "java.debug.settings.onBuildFailureProceed": true,
+    
+    // ===== Markdown PDF Plus Configuration - PADRÃO ABNT =====
+    
+    // Diretório de saída para os PDFs (vazio = mesmo diretório do arquivo)
+    "markdown-pdf-plus.outputHome": "",
+    
+    // Nome do arquivo de saída (vazio = mesmo nome do arquivo .md)
+    "markdown-pdf-plus.outputFilename": "",
+    
+    // Usar configurações de página do CSS (ABNT específico)
+    "markdown-pdf-plus.usePageStyleFromCSS": true,
+    
+    // Caminho para CSS ABNT customizado
+    "markdown-pdf-plus.CSSPath": ".vscode/markdown-pdf-plus-abnt.css",
+    
+    // CSS em branco para usar apenas o arquivo externo
+    "markdown-pdf-plus.CSSRaw": "",
+    
+    // ===== Outras configurações úteis do VS Code =====
+    
+    // Configurações do editor Markdown (ABNT)
+    "markdown.preview.fontSize": 12,
+    "markdown.preview.lineHeight": 1.5,
+    "markdown.preview.fontFamily": "Times New Roman, Times, serif",
+    
+    // Quebra de linha automática para markdown
+    "[markdown]": {
+        "editor.wordWrap": "on",
+        "editor.quickSuggestions": {
+            "comments": false,
+            "strings": false,
+            "other": false
+        }
+    }
+}

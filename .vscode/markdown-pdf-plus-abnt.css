@@ -1,0 +1,318 @@
+/* ===== CSS PADRÃO ABNT - NBR 14724 ===== */
+
+/* Configuração da página conforme ABNT */
+@page {
+  size: A4 portrait;
+  margin-top: 3cm;    /* Margem superior: 3cm (ABNT) */
+  margin-bottom: 2cm; /* Margem inferior: 2cm (ABNT) */
+  margin-left: 3cm;   /* Margem esquerda: 3cm (ABNT) */
+  margin-right: 2cm;  /* Margem direita: 2cm (ABNT) */
+}
+
+/* Reset básico */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Corpo do documento - Configurações ABNT */
+body {
+  font-family: "Times New Roman", Times, serif; /* Fonte Times New Roman (ABNT) */
+  font-size: 12pt;                              /* Tamanho 12pt (ABNT) */
+  line-height: 1.5;                             /* Espaçamento 1,5 (ABNT) */
+  color: #000000;                               /* Texto em preto */
+  background-color: #ffffff;                    /* Fundo branco */
+  text-align: justify;                          /* Texto justificado (ABNT) */
+  margin: 0;
+  padding: 0;
+}
+
+/* Garantir que TODOS os textos sejam justificados por padrão */
+body * {
+  text-align: justify;
+}
+
+/* Cabeçalhos conforme ABNT - Sobrescreve a justificação global */
+h1 {
+  font-size: 14pt;                    /* Tamanho maior para título principal */
+  font-weight: bold;
+  text-align: center !important;      /* Títulos centralizados (ABNT) */
+  text-transform: uppercase;          /* Maiúsculas (seções primárias) */
+  margin-top: 0;                      /* Sem margem superior no primeiro */
+  margin-bottom: 18pt;                /* 1,5 espaços após */
+  page-break-after: avoid;            /* Evita quebra após títulos */
+}
+
+h2 {
+  font-size: 12pt;
+  font-weight: bold;
+  text-align: left !important;        /* Seções secundárias à esquerda */
+  text-transform: uppercase;
+  margin-top: 18pt;                   /* 1,5 espaços antes */
+  margin-bottom: 12pt;                /* 1 espaço após */
+  page-break-after: avoid;
+}
+
+h3 {
+  font-size: 12pt;
+  font-weight: bold;
+  text-align: left !important;
+  text-transform: none;               /* Sem maiúsculas nas terciárias */
+  margin-top: 18pt;
+  margin-bottom: 12pt;
+  page-break-after: avoid;
+}
+
+h4, h5, h6 {
+  font-size: 12pt;
+  font-weight: bold;
+  text-align: left !important;
+  text-transform: none;
+  margin-top: 12pt;
+  margin-bottom: 6pt;
+  page-break-after: avoid;
+}
+
+/* Parágrafos conforme ABNT */
+p {
+  font-size: 12pt;
+  line-height: 1.5;
+  text-align: justify;
+  text-indent: 1.25cm;                /* Recuo de primeira linha */
+  margin-top: 0;
+  margin-bottom: 6pt;                 /* Espaço entre parágrafos */
+}
+
+/* Primeiro parágrafo após títulos sem recuo */
+h1 + p,
+h2 + p,
+h3 + p,
+h4 + p,
+h5 + p,
+h6 + p {
+  text-indent: 0;
+}
+
+/* Listas conforme ABNT */
+ul, ol {
+  margin-top: 6pt;
+  margin-bottom: 6pt;
+  margin-left: 1.25cm;
+  padding-left: 0;
+}
+
+li {
+  font-size: 12pt;
+  line-height: 1.5;
+  text-align: justify;
+  margin-bottom: 3pt;
+}
+
+li p {
+  text-indent: 0;                     /* Sem recuo em parágrafos de lista */
+}
+
+/* Citações conforme ABNT */
+blockquote {
+  font-size: 11pt;                    /* Fonte menor para citações longas */
+  line-height: 1.0;                   /* Espaçamento simples */
+  margin: 12pt 0 12pt 4cm;           /* Recuo de 4cm da margem esquerda */
+  text-align: justify;
+  text-indent: 0;
+  font-style: italic;
+}
+
+/* Código - Formatação técnica */
+code {
+  font-family: "Courier New", Courier, monospace;
+  font-size: 10pt;
+  background-color: #f5f5f5;
+  border: 1px solid #cccccc;
+  padding: 2pt 4pt;
+  border-radius: 2pt;
+}
+
+pre {
+  font-family: "Courier New", Courier, monospace;
+  font-size: 10pt;
+  line-height: 1.2;
+  background-color: #f5f5f5;
+  border: 1px solid #cccccc;
+  padding: 8pt;
+  margin: 12pt 0;
+  overflow-x: auto;
+  page-break-inside: avoid;
+  border-radius: 2pt;
+}
+
+pre code {
+  background-color: transparent;
+  border: none;
+  padding: 0;
+  border-radius: 0;
+}
+
+/* Tabelas conforme ABNT */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 12pt 0;
+  font-size: 11pt;                    /* Fonte ligeiramente menor em tabelas */
+  page-break-inside: avoid;
+}
+
+table caption {
+  font-size: 11pt;
+  font-weight: bold;
+  text-align: center !important;
+  margin-bottom: 6pt;
+  caption-side: top;
+}
+
+table th,
+table td {
+  border: 1pt solid #000000;         /* Bordas pretas finas */
+  padding: 4pt 6pt;
+  text-align: left !important;       /* Células de tabela à esquerda */
+  vertical-align: top;
+}
+
+table th {
+  font-weight: bold;
+  background-color: #f0f0f0;
+  text-align: center !important;      /* Cabeçalhos de tabela centralizados */
+}
+
+/* Figuras e imagens */
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 12pt auto;                  /* Centralizada */
+  border: 1pt solid #cccccc;
+  page-break-inside: avoid;
+}
+
+/* Legendas de figuras */
+.figure-caption {
+  font-size: 11pt;
+  text-align: center !important;      /* Legendas centralizadas */
+  margin-top: 6pt;
+  margin-bottom: 12pt;
+  font-weight: bold;
+}
+
+/* Links - Formatação discreta para impressão */
+a {
+  color: #000000;                     /* Links em preto para impressão */
+  text-decoration: underline;
+}
+
+a:hover {
+  text-decoration: none;
+}
+
+/* Quebras de página */
+.page-break {
+  page-break-before: always;
+}
+
+.no-break {
+  page-break-inside: avoid;
+}
+
+/* Linha horizontal */
+hr {
+  border: none;
+  border-top: 1pt solid #000000;
+  margin: 18pt 0;
+  page-break-after: avoid;
+}
+
+/* Estilos específicos para impressão/PDF */
+@media print {
+  body {
+    font-size: 12pt;
+    line-height: 1.5;
+    color: #000000;
+    background: white;
+  }
+  
+  /* Remove URLs dos links em impressão acadêmica */
+  a[href]:after {
+    content: none;
+  }
+  
+  /* Controle de quebras de página */
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid;
+    page-break-inside: avoid;
+  }
+  
+  table, pre, blockquote, img {
+    page-break-inside: avoid;
+  }
+  
+  /* Evita quebras órfãs e viúvas */
+  p {
+    orphans: 3;
+    widows: 3;
+  }
+  
+  /* Força quebra antes de títulos principais */
+  h1 {
+    page-break-before: always;
+  }
+  
+  h1:first-child {
+    page-break-before: avoid;
+  }
+}
+
+/* Numeração de páginas (se suportado) */
+@page :first {
+  @bottom-center {
+    content: none;                    /* Primeira página sem número */
+  }
+}
+
+@page {
+  @bottom-center {
+    content: counter(page);           /* Numeração centralizada no rodapé */
+    font-family: "Times New Roman", Times, serif;
+    font-size: 10pt;
+  }
+}
+
+/* Classe utilitária para elementos que não devem ter recuo */
+.no-indent {
+  text-indent: 0 !important;
+}
+
+/* Classe para texto centralizado */
+.center {
+  text-align: center !important;
+  text-indent: 0 !important;
+}
+
+/* Classe para texto à esquerda */
+.left {
+  text-align: left !important;
+  text-indent: 0 !important;
+}
+
+/* Classe para forçar justificação */
+.justify {
+  text-align: justify !important;
+}
+
+/* Classe para espaçamento duplo (se necessário) */
+.double-space {
+  line-height: 2.0 !important;
+}
+
+/* Classe para texto em maiúsculas */
+.uppercase {
+  text-transform: uppercase !important;
+}
