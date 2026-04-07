@@ -6,12 +6,13 @@ Este arquivo define as diretrizes obrigatórias para a atuação do Antigravity 
 
 Sempre consulte os arquivos abaixo para garantir que todas as interações e gerações de código estejam alinhadas com as definições do projeto:
 
-1.  **Regras de Negócio**: [.agent/context/business_rules.md](file:///.agent/context/business_rules.md) - Domínio, fluxos de pedido/pagamento e eventos.
-2.  **Arquitetura**: [.agent/context/architecture.md](file:///.agent/context/architecture.md) - Estrutura de microsserviços, Clean Architecture e Banco de Dados.
-3.  **Boas Práticas**: [.agent/context/best_practices.md](file:///.agent/context/best_practices.md) - Padrões de código, naming, commits e testes.
-4.  **Tecnologias**: [.agent/context/technologies.md](file:///.agent/context/technologies.md) - Stack tecnológica detalhada.
-5.  **Histórico e Mantenedores**: [.agent/context/tech_history.md](file:///.agent/context/tech_history.md) - Contexto histórico das tecnologias utilizadas.
-6.  **Sugestões e Evolução**: [.agent/context/suggestions.md](file:///.agent/context/suggestions.md) - Próximos passos e melhorias sugeridas.
+1.  **Regras de Negócio**: [.agent/context/business_rules.md](.agent/context/business_rules.md) - Domínio, fluxos de pedido/pagamento e eventos.
+2.  **Arquitetura**: [.agent/context/architecture.md](.agent/context/architecture.md) - Estrutura de microsserviços, Clean Architecture e Banco de Dados.
+3.  **Boas Práticas**: [.agent/context/best_practices.md](.agent/context/best_practices.md) - Padrões de código, naming, commits e testes.
+4.  **Tecnologias**: [.agent/context/technologies.md](.agent/context/technologies.md) - Stack tecnológica detalhada.
+5.  **Histórico e Mantenedores**: [.agent/context/tech_history.md](.agent/context/tech_history.md) - Contexto histórico das tecnologias utilizadas.
+6.  **Sugestões e Evolução**: [.agent/context/suggestions.md](.agent/context/suggestions.md) - Próximos passos e melhorias sugeridas.
+7.  **Detalhamento de RFs**: [.agent/feature/](.agent/feature/) - Detalhamento funcional de cada requisito (RF-01 a RF-06).
 
 ## Princípios Mandatórios
 
