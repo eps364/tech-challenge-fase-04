@@ -1,0 +1,8 @@
+environment                = "dev"
+aws_region                 = "us-east-1"
+dynamodb_table_name        = "avaliacoes-dev"
+email_queue_name           = "email-queue"
+email_dlq_name             = "email-queue-dlq"
+ses_from_email             = "noreply@example.com"
+report_recipient_email     = "admin@example.com"
+report_schedule_expression = "rate(1 day)"

@@ -1,0 +1,11 @@
+{
+  "type": "AVALIACAO_CRIADA",
+  "to": "luiz@email.com",
+  "subject": "Avaliação registrada",
+  "template": "avaliacao-criada",
+  "payload": {
+    "nomeAluno": "Luiz Silva",
+    "disciplina": "Arquitetura Java Serverless",
+    "nota": 9.5
+  }
+}

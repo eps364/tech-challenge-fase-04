@@ -1,47 +1,47 @@
-# Exemplo de Payloads e Respostas
+# Exemplos de Payloads
 
-## POST /avaliacao
-### Request
+## Avaliação
+
 ```json
 {
-  "descricao": "A aula foi excelente, mas o áudio estava baixo.",
-  "nota": 7
+  "nomeAluno": "Luiz Silva",
+  "emailAluno": "luiz@email.com",
+  "disciplina": "Arquitetura Java Serverless",
+  "nota": 9.5,
+  "comentario": "Excelente entrega do projeto."
 }
 ```
 
-### Response
+## E-mail de confirmação
+
 ```json
 {
-  "id": "uuid",
-  "descricao": "A aula foi excelente, mas o áudio estava baixo.",
-  "nota": 7,
-  "dataEnvio": "2026-03-25T14:00:00Z",
-  "urgencia": "normal"
+  "type": "AVALIACAO_CRIADA",
+  "to": "luiz@email.com",
+  "subject": "Avaliação registrada",
+  "template": "avaliacao-criada",
+  "payload": {
+    "nomeAluno": "Luiz Silva",
+    "disciplina": "Arquitetura Java Serverless",
+    "nota": 9.5
+  }
 }
 ```
 
-## Notificação de Urgência
-```json
-{
-  "descricao": "Problema grave na plataforma.",
-  "urgencia": "alta",
-  "dataEnvio": "2026-03-25T14:00:00Z"
-}
-```
+## E-mail de relatório
 
-## Relatório Semanal
 ```json
 {
-  "descricao": "Resumo semanal de feedbacks.",
-  "urgencia": "alta",
-  "dataEnvio": "2026-03-25T14:00:00Z",
-  "qtdAvaliacoesPorDia": {
-    "2026-03-24": 5,
-    "2026-03-25": 8
-  },
-  "qtdAvaliacoesPorUrgencia": {
-    "alta": 2,
-    "normal": 11
+  "type": "RELATORIO_GERADO",
+  "to": "admin@example.com",
+  "subject": "Relatório de avaliações",
+  "template": "relatorio-avaliacoes",
+  "payload": {
+    "totalAvaliacoes": 10,
+    "mediaNotas": 8.7,
+    "maiorNota": 10,
+    "menorNota": 6,
+    "dataGeracao": "2026-04-28T10:00:00Z"
   }
 }
 ```

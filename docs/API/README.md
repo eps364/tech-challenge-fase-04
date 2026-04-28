@@ -1,51 +1,19 @@
-# Documentação da API — Plataforma de Feedback
+# API Local
 
-## Endpoint: POST /avaliacao
-Recebe um feedback do aluno.
+## POST /avaliacoes
 
-### Exemplo de Request
-```json
-{
-  "descricao": "A aula foi excelente, mas o áudio estava baixo.",
-  "nota": 7
-}
-```
+Payload de exemplo disponível em [avaliacao-request.json](./avaliacao-request.json).
 
-### Exemplo de Response (201)
+Resposta esperada:
+
 ```json
 {
   "id": "uuid",
-  "descricao": "A aula foi excelente, mas o áudio estava baixo.",
-  "nota": 7,
-  "dataEnvio": "2026-03-25T14:00:00Z",
-  "urgencia": "normal"
+  "message": "Avaliação registrada com sucesso."
 }
 ```
 
-## Dados para Notificação de Urgência
-```json
-{
-  "descricao": "Problema grave na plataforma.",
-  "urgencia": "alta",
-  "dataEnvio": "2026-03-25T14:00:00Z"
-}
-```
+## Mensagens SQS
 
-## Dados para Relatório Semanal
-```json
-{
-  "descricao": "Resumo semanal de feedbacks.",
-  "urgencia": "alta",
-  "dataEnvio": "2026-03-25T14:00:00Z",
-  "qtdAvaliacoesPorDia": {
-    "2026-03-24": 5,
-    "2026-03-25": 8
-  },
-  "qtdAvaliacoesPorUrgencia": {
-    "alta": 2,
-    "normal": 11
-  }
-}
-```
-
-> Atualize os exemplos conforme a implementação e mantenha a coleção de testes neste diretório.
+- [email-avaliacao-criada.json](./email-avaliacao-criada.json)
+- [email-relatorio-gerado.json](./email-relatorio-gerado.json)

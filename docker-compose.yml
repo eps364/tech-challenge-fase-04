@@ -1,0 +1,17 @@
+version: "3.9"
+
+services:
+  localstack:
+    image: localstack/localstack:3.7
+    container_name: tech-challenge-localstack
+    ports:
+      - "4566:4566"
+    environment:
+      SERVICES: lambda,apigateway,dynamodb,sqs,ses,events,iam,logs,cloudwatch
+      DEBUG: 1
+      AWS_DEFAULT_REGION: ${AWS_REGION:-us-east-1}
+      LAMBDA_EXECUTOR: docker-reuse
+      DOCKER_HOST: unix:///var/run/docker.sock
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "./infra/localstack:/etc/localstack/init/ready.d"

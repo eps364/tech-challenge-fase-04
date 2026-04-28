@@ -1,0 +1,13 @@
+{
+  "type": "RELATORIO_GERADO",
+  "to": "admin@example.com",
+  "subject": "Relatório de avaliações",
+  "template": "relatorio-avaliacoes",
+  "payload": {
+    "totalAvaliacoes": 10,
+    "mediaNotas": 8.7,
+    "maiorNota": 10,
+    "menorNota": 6,
+    "dataGeracao": "2026-04-28T10:00:00Z"
+  }
+}
