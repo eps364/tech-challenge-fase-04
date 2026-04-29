@@ -74,7 +74,7 @@ Variáveis principais:
 - `REPORT_RECIPIENT_EMAIL`
 - `LOCALSTACK_ENDPOINT`
 
-No host local use normalmente `http://localhost:4566`. Em containers pode ser necessário `http://localstack:4566`.
+No Windows com Lambda rodando via LocalStack, prefira `http://localhost.localstack.cloud:4566`. O uso de `http://localhost:4566` pode falhar quando a Lambda executa em container separado.
 
 ## Como rodar localmente
 
@@ -84,8 +84,8 @@ Pré-requisitos:
 - Maven 3.9+
 - Docker
 - Terraform 1.6+
-- `awslocal`
-- `jq`
+
+No Windows, prefira os scripts PowerShell (`.ps1`). Eles usam o `awslocal` de dentro do container do LocalStack, então você não precisa instalar `awslocal` ou `jq` localmente.
 
 Passos:
 
@@ -97,6 +97,19 @@ docker compose up -d
 ./scripts/invoke-reports-local.sh
 ./scripts/invoke-email-sender-local.sh
 ```
+
+### Windows PowerShell
+
+```powershell
+Copy-Item .env.example .env
+.\scripts\start-localstack.ps1
+.\scripts\create-local-resources.ps1
+.\scripts\invoke-avaliador-local.ps1
+.\scripts\invoke-reports-local.ps1
+.\scripts\invoke-email-sender-local.ps1
+```
+
+Se o Docker responder com `Acesso negado`, abra o PowerShell como administrador ou ajuste a permissão do Docker Desktop para o seu usuário.
 
 Comandos úteis:
 
@@ -218,3 +231,92 @@ Para um cenário mais robusto, recomenda-se trocar access keys por OIDC + role a
 - Evoluir para templates de e-mail externos.
 - Atualizar status da avaliação após envio do e-mail.
 - Adicionar métricas e alarmes de falha em produção.
+
+## Setup Real no Windows com Git Bash
+
+Este foi o setup mínimo necessário para executar o projeto localmente no Windows usando Git Bash, sem alterar o código da aplicação para contornar problemas de terminal.
+
+### Dependências necessárias
+
+- Docker Desktop
+- Git for Windows
+- Java JDK
+- Maven
+- Python com `pip`
+- `awscli` e `awscli-local`
+- `jq`
+
+### Instalações usadas
+
+Quando o `winget` estiver funcionando:
+
+```bash
+winget install Python.Python.3.13
+winget install jqlang.jq
+```
+
+O `aws` e o `awslocal` ficaram mais estáveis no Git Bash quando instalados pelo `pip` no mesmo ambiente Python:
+
+```bash
+python -m pip install --user --upgrade awscli awscli-local
+```
+
+### Validar no Git Bash
+
+```bash
+python --version
+python -m pip --version
+aws --version
+awslocal --version
+jq --version
+docker --version
+docker compose version
+```
+
+### Descobrir o diretório de scripts do Python
+
+```bash
+python -c "import sysconfig; print(sysconfig.get_path('scripts', 'nt_user'))"
+cygpath "$(python -c "import sysconfig; print(sysconfig.get_path('scripts', 'nt_user'))")"
+```
+
+No ambiente usado durante a configuração, o diretório retornado foi:
+
+```bash
+/c/Users/luizs/AppData/Roaming/Python/Python313/Scripts
+```
+
+### Adicionar o diretório do `pip --user` ao PATH do Git Bash
+
+```bash
+echo 'export PATH="/c/Users/luizs/AppData/Roaming/Python/Python313/Scripts:$PATH"' >> ~/.bashrc
+source ~/.bashrc
+hash -r
+```
+
+### Validar resolução dos executáveis
+
+```bash
+type -a aws
+type -a awslocal
+type -a jq
+```
+
+O esperado é que `aws` e `awslocal` apontem para o mesmo diretório de scripts do Python, e que `jq` apareça no PATH do Git Bash.
+
+### Ordem prática para subir o projeto
+
+```bash
+cp .env.example .env
+./scripts/start-localstack.sh
+./scripts/create-local-resources.sh
+./scripts/invoke-avaliador-local.sh
+./scripts/invoke-reports-local.sh
+./scripts/invoke-email-sender-local.sh
+```
+
+### Observações importantes
+
+- Se o `winget` não estiver funcionando, repare ou reinstale o App Installer do Windows antes de continuar.
+- O `jq` precisa estar visível no Git Bash, porque `invoke-avaliador-local.sh` usa `jq` para montar o payload JSON.
+- O `awscli-local` sozinho não basta; no Git Bash ele deve estar alinhado com um `aws` funcional no mesmo ambiente Python.

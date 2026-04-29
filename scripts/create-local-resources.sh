@@ -1,8 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+
+cd "${PROJECT_ROOT}"
+
 AWS_REGION="${AWS_REGION:-us-east-1}"
-LOCALSTACK_ENDPOINT="${LOCALSTACK_ENDPOINT:-http://localhost:4566}"
+LOCALSTACK_ENDPOINT="${LOCALSTACK_ENDPOINT:-http://localhost.localstack.cloud:4566}"
 DYNAMODB_TABLE_NAME="${DYNAMODB_TABLE_NAME:-avaliacoes}"
 EMAIL_QUEUE_NAME="${EMAIL_QUEUE_NAME:-email-queue}"
 EMAIL_DLQ_NAME="${EMAIL_DLQ_NAME:-email-queue-dlq}"
@@ -17,13 +22,18 @@ awslocal dynamodb create-table \
 DLQ_URL="$(awslocal sqs create-queue --queue-name "${EMAIL_DLQ_NAME}" --query 'QueueUrl' --output text)"
 DLQ_ARN="$(awslocal sqs get-queue-attributes --queue-url "${DLQ_URL}" --attribute-names QueueArn --query 'Attributes.QueueArn' --output text)"
 REDRIVE_POLICY="$(printf '{"deadLetterTargetArn":"%s","maxReceiveCount":"3"}' "${DLQ_ARN}")"
-awslocal sqs create-queue --queue-name "${EMAIL_QUEUE_NAME}" --attributes "RedrivePolicy=${REDRIVE_POLICY}" >/dev/null 2>&1 || true
+
+if ! awslocal sqs create-queue --queue-name "${EMAIL_QUEUE_NAME}" --attributes "RedrivePolicy=${REDRIVE_POLICY}" >/dev/null 2>&1; then
+  echo "Aviso: nao foi possivel aplicar RedrivePolicy no LocalStack; criando a fila principal sem DLQ vinculada."
+  awslocal sqs create-queue --queue-name "${EMAIL_QUEUE_NAME}" >/dev/null 2>&1 || true
+fi
+
 QUEUE_URL="$(awslocal sqs get-queue-url --queue-name "${EMAIL_QUEUE_NAME}" --query 'QueueUrl' --output text)"
 QUEUE_ARN="$(awslocal sqs get-queue-attributes --queue-url "${QUEUE_URL}" --attribute-names QueueArn --query 'Attributes.QueueArn' --output text)"
 
 awslocal ses verify-email-identity --email-address "${SES_FROM_EMAIL}" >/dev/null 2>&1 || true
 
-./scripts/package.sh
+"${SCRIPT_DIR}/package.sh"
 
 awslocal lambda create-function \
   --function-name avaliador \
