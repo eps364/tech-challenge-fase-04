@@ -1,0 +1,40 @@
+name: GitFlow Guard
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - edited
+
+jobs:
+  validate-gitflow:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Validate PR source and target
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const base = context.payload.pull_request.base.ref;
+            const head = context.payload.pull_request.head.ref;
+
+            const isWorkBranch = head !== "main" && head !== "develop";
+            const isFeatureFlow = base === "develop" && isWorkBranch;
+            const isReleaseFlow = base === "main" && head === "develop";
+
+            if (isFeatureFlow || isReleaseFlow) {
+              core.info(`Fluxo valido: ${head} -> ${base}`);
+              return;
+            }
+
+            core.setFailed(
+              [
+                "Fluxo de branches invalido.",
+                `PR recebido: ${head} -> ${base}`,
+                "Permitido:",
+                "- branch de trabalho -> develop",
+                "- develop -> main"
+              ].join("\n")
+            );

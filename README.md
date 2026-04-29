@@ -206,7 +206,7 @@ Saídas relevantes:
 
 ### Deploy Dev
 
-`/.github/workflows/deploy-dev.yml` executa build e `terraform apply` em `main` ou manualmente.
+`/.github/workflows/deploy-dev.yml` executa build e `terraform apply` em `develop` ou manualmente.
 
 Secrets esperados:
 
@@ -320,3 +320,19 @@ cp .env.example .env
 - Se o `winget` não estiver funcionando, repare ou reinstale o App Installer do Windows antes de continuar.
 - O `jq` precisa estar visível no Git Bash, porque `invoke-avaliador-local.sh` usa `jq` para montar o payload JSON.
 - O `awscli-local` sozinho não basta; no Git Bash ele deve estar alinhado com um `aws` funcional no mesmo ambiente Python.
+
+## GitFlow
+
+Este repositorio adota duas branches fixas:
+
+- `main`: branch estavel para release.
+- `develop`: branch de integracao.
+
+Regras:
+
+- novas implementacoes devem sair de `develop`;
+- o merge da branch de trabalho deve acontecer por PR para `develop`;
+- a promocao para release deve acontecer por PR de `develop` para `main`;
+- `main` e `develop` nao devem receber commit direto.
+
+O detalhamento do fluxo esta em [docs/gitflow.md](./docs/gitflow.md).
