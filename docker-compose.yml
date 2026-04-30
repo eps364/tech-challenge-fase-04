@@ -7,7 +7,7 @@ services:
     ports:
       - "4566:4566"
     environment:
-      SERVICES: lambda,apigateway,dynamodb,sqs,ses,events,iam,logs,cloudwatch
+      SERVICES: lambda,apigateway,dynamodb,sqs,ses,sns,events,iam,logs,cloudwatch
       DEBUG: 1
       AWS_DEFAULT_REGION: ${AWS_REGION:-us-east-1}
       LAMBDA_EXECUTOR: docker-reuse

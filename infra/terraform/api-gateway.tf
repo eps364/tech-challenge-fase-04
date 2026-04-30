@@ -19,6 +19,12 @@ resource "aws_apigatewayv2_integration" "avaliador" {
   payload_format_version = "2.0"
 }
 
+resource "aws_apigatewayv2_route" "avaliacao_post" {
+  api_id    = aws_apigatewayv2_api.http_api.id
+  route_key = "POST /avaliacao"
+  target    = "integrations/${aws_apigatewayv2_integration.avaliador.id}"
+}
+
 resource "aws_apigatewayv2_route" "avaliacoes_post" {
   api_id    = aws_apigatewayv2_api.http_api.id
   route_key = "POST /avaliacoes"

@@ -38,7 +38,8 @@ public class AvaliadorHandler implements RequestHandler<APIGatewayProxyRequestEv
         this.avaliadorService = new AvaliadorService(
                 new DynamoDbAvaliacaoRepository(dynamoDbClient, env.require("DYNAMODB_TABLE_NAME")),
                 new SqsEmailQueuePublisher(sqsClient, env.require("EMAIL_QUEUE_URL")),
-                Clock.systemUTC());
+                Clock.systemUTC(),
+                env.getOrDefault("ADMIN_ALERT_EMAIL", "admin@example.com"));
     }
 
     public AvaliadorHandler(AvaliadorService avaliadorService) {
@@ -48,7 +49,7 @@ public class AvaliadorHandler implements RequestHandler<APIGatewayProxyRequestEv
     @Override
     public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
         try {
-            LOGGER.info("Processing POST /avaliacoes request requestId={}", context != null ? context.getAwsRequestId() : "local");
+            LOGGER.info("Processing POST /avaliacao request requestId={}", context != null ? context.getAwsRequestId() : "local");
             CreateAvaliacaoRequest request = JsonUtils.fromJson(input.getBody(), CreateAvaliacaoRequest.class);
             return HttpResponses.success(201, avaliadorService.process(request));
         } catch (ProcessingException | ValidationException exception) {

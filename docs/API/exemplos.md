@@ -1,46 +1,71 @@
 # Exemplos de Payloads
 
-## Avaliação
+## Avaliacao minima
 
 ```json
 {
-  "nomeAluno": "Luiz Silva",
-  "emailAluno": "luiz@email.com",
-  "disciplina": "Arquitetura Java Serverless",
-  "nota": 9.5,
-  "comentario": "Excelente entrega do projeto."
+  "descricao": "A aula travou varias vezes e nao consegui acompanhar o conteudo.",
+  "nota": 3
 }
 ```
 
-## E-mail de confirmação
+## Avaliacao completa
 
 ```json
 {
-  "type": "AVALIACAO_CRIADA",
-  "to": "luiz@email.com",
-  "subject": "Avaliação registrada",
-  "template": "avaliacao-criada",
+  "descricao": "Excelente entrega do projeto.",
+  "nota": 9,
+  "nomeAluno": "Luiz Silva",
+  "emailAluno": "luiz@email.com",
+  "disciplina": "Arquitetura Java Serverless"
+}
+```
+
+## E-mail de alerta critico
+
+```json
+{
+  "type": "AVALIACAO_CRITICA",
+  "to": "admin@example.com",
+  "subject": "Alerta de feedback critico",
+  "template": "avaliacao-critica",
   "payload": {
-    "nomeAluno": "Luiz Silva",
-    "disciplina": "Arquitetura Java Serverless",
-    "nota": 9.5
+    "descricao": "A aula travou varias vezes e nao consegui acompanhar o conteudo.",
+    "urgencia": "CRITICA",
+    "dataEnvio": "2026-04-28T10:00:00Z",
+    "nota": 3
   }
 }
 ```
 
-## E-mail de relatório
+## E-mail de relatorio semanal
 
 ```json
 {
   "type": "RELATORIO_GERADO",
   "to": "admin@example.com",
-  "subject": "Relatório de avaliações",
+  "subject": "Relatorio semanal de avaliacoes",
   "template": "relatorio-avaliacoes",
   "payload": {
     "totalAvaliacoes": 10,
-    "mediaNotas": 8.7,
-    "maiorNota": 10,
-    "menorNota": 6,
+    "mediaNotas": 7.8,
+    "quantidadeAvaliacoesPorDia": {
+      "2026-04-27": 4,
+      "2026-04-28": 6
+    },
+    "quantidadeAvaliacoesPorUrgencia": {
+      "BAIXA": 5,
+      "MEDIA": 3,
+      "ALTA": 1,
+      "CRITICA": 1
+    },
+    "feedbacks": [
+      {
+        "descricao": "A aula travou varias vezes e nao consegui acompanhar o conteudo.",
+        "urgencia": "CRITICA",
+        "dataEnvio": "2026-04-28T10:00:00Z"
+      }
+    ],
     "dataGeracao": "2026-04-28T10:00:00Z"
   }
 }

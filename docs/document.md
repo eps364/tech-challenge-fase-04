@@ -1,75 +1,88 @@
-
 # Qualidade dos cursos on-line - Tech Challenge Fase 04
 
 ## Equipe
+
 | Nome                           | RM       |
 |--------------------------------|----------|
 | Emerson Pereira da Silva       | RM367268 |
 | Luiz Octavio Tassinari Saraiva | RM367408 |
 
----
+## 1. Contexto
 
-## 1. Introdução e Contexto
+O projeto implementa uma plataforma serverless para receber feedbacks de estudantes sobre aulas on-line, detectar avaliacoes criticas e enviar relatorios semanais para administradores.
 
-Apresentação do projeto, área de atuação, motivação e justificativa para o desenvolvimento do sistema de pedidos online.
+## 2. Objetivo
 
-## 2. Objetivos do Projeto
+Automatizar o recebimento de feedbacks, o envio de notificacoes para problemas criticos e a geracao de relatorios periodicos em ambiente de nuvem AWS.
 
-O objetivo é desenvolver uma aplicação hospedada em um ambiente de nuvem, com funções serverless para automatizar o recebimento de feedbacks, o  envio  de  notificações  e  a  geração  de  relatórios.  Como  estamos  em  um ambiente com créditos de cloud computing limitados, vocês deverão gravar um vídeo demonstrando o sistema em funcionamento.
+## 3. Requisitos Funcionais
 
-## 3. Escopo e Requisitos
+- Registrar feedbacks pelo endpoint `POST /avaliacao`.
+- Validar `descricao` e `nota` entre `0` e `10`.
+- Persistir feedbacks no DynamoDB.
+- Classificar urgencia a partir da nota.
+- Enviar notificacao automatica aos administradores quando a urgencia for `CRITICA`.
+- Gerar relatorio semanal com media das notas, feedbacks enviados, quantidade por dia e quantidade por urgencia.
 
-- **Funcionais:** Listar as principais funcionalidades do sistema (ex: cadastro de pedidos, autenticação, etc).
-- **Não Funcionais:** Requisitos de desempenho, segurança, usabilidade, etc.
+## 4. Requisitos Nao Funcionais
 
-## 4. Arquitetura do Sistema
+- Usar arquitetura serverless em cloud.
+- Separar responsabilidades entre funcoes Lambda.
+- Automatizar deploy com Terraform e GitHub Actions.
+- Usar filas para desacoplar envio de e-mails.
+- Monitorar erros de Lambdas e mensagens na DLQ com CloudWatch Alarms.
+- Aplicar governanca basica por IAM, variaveis de ambiente e recursos gerenciados por Terraform.
 
-- **Visão Geral:** Descrição da arquitetura adotada (ex: camadas, microsserviços, etc).
-- **Estrutura de Pastas:** Explicação da organização dos arquivos e diretórios.
-- **Principais Componentes:** Breve descrição dos módulos e suas responsabilidades.
-- **Padrões de Projeto:** Citar padrões utilizados (ex: MVC, Repository, DTO, etc).
+## 5. Arquitetura
 
-## 5. Tecnologias e Ferramentas
+- `API Gateway`: exposicao HTTP do endpoint de entrada.
+- `Lambda Avaliador`: valida, classifica urgencia, persiste feedback e publica notificacoes.
+- `DynamoDB`: armazenamento gerenciado dos feedbacks.
+- `SQS EmailQueue`: fila de envio assincrono de e-mails.
+- `Lambda EmailSender`: consome mensagens da fila e envia e-mails via SES ou simulacao local.
+- `EventBridge Scheduler`: aciona o relatorio semanal.
+- `Lambda ReportsGenerator`: calcula os dados do relatorio semanal.
+- `CloudWatch` e `SNS`: logs, dashboard e alarmes de erro.
 
-- **Linguagens:** Java, etc.
-- **Frameworks:** Spring Boot, etc.
-- **Banco de Dados:** PostgreSQL (container Docker).
-- **Containers:** Docker, Docker Compose.
-- **Testes:** JUnit, Postman (coleções).
-- **Outros:** Ferramentas de qualidade, CI/CD, etc.
+## 6. Regra de Urgencia
 
-## 6. Qualidade de Código e Práticas
+- `0` a `4`: `CRITICA`, dispara alerta aos administradores.
+- `5` a `6`: `ALTA`.
+- `7` a `8`: `MEDIA`.
+- `9` a `10`: `BAIXA`.
 
-- **Testes Automatizados:** Estratégia e cobertura.
-- **Padrões de Código:** Lint, formatação, convenções.
-- **Segurança:** Autenticação JWT, boas práticas.
-- **Documentação:** Comentários, OpenAPI/Swagger, etc.
+## 7. Deploy
 
-## 7. Execução do Projeto
+```bash
+mvn clean package
+cd infra/terraform
+terraform init
+terraform plan -var-file=environments/dev.tfvars
+terraform apply -var-file=environments/dev.tfvars
+```
 
-- **Como Executar Localmente:**
-  - Subir containers: `docker compose up -d`
-  - Rodar aplicação: `./mvnw spring-boot:run` ou via task do VS Code
-  - Hot reload: instruções para desenvolvimento
-- **Coleções Postman:** Caminho para as collections de teste e como utilizá-las.
+## 8. Execucao Local
 
-## 8. Endpoints Principais
+```bash
+cp .env.example .env
+docker compose up -d
+bash ./scripts/create-local-resources.sh
+bash ./scripts/invoke-avaliador-local.sh
+bash ./scripts/invoke-reports-local.sh
+bash ./scripts/invoke-email-sender-local.sh
+```
 
-Resumo dos principais endpoints da API, métodos, exemplos de uso.
+## 9. Monitoramento
 
-## 9. Repositorio
+O Terraform cria log groups para as Lambdas, alarmes de erro por funcao, alarme para mensagens visiveis na DLQ e um dashboard CloudWatch. Os alarmes publicam no topico SNS `monitoring-alerts`, com assinatura de e-mail configurada por `admin_alert_email`.
 
-## 10. Video
+## 10. Referencias
 
-## 11. Considerações Finais e Referências
-
-Conclusão sobre o desenvolvimento, aprendizados, próximos passos e referências bibliográficas ou técnicas.
-
----
-### Siglas e Significados
-
-- **API:** Application Programming Interface
-- **RM:** Registro de Matrícula
-- **CRUD:** Create, Read, Update, Delete
-- **JWT:** JSON Web Token
-- **Docker:** Plataforma de containerização
+- AWS Lambda
+- Amazon API Gateway HTTP API
+- Amazon DynamoDB
+- Amazon SQS
+- Amazon SES
+- Amazon EventBridge Scheduler
+- Amazon CloudWatch
+- Terraform

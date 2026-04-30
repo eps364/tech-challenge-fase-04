@@ -9,7 +9,16 @@ public record Avaliacao(
         String disciplina,
         BigDecimal nota,
         String comentario,
+        Urgencia urgencia,
         AvaliacaoStatus status,
         String createdAt,
         String updatedAt) {
+
+    public String descricao() {
+        return comentario;
+    }
+
+    public String dataEnvio() {
+        return createdAt;
+    }
 }

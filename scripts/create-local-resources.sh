@@ -12,6 +12,7 @@ DYNAMODB_TABLE_NAME="${DYNAMODB_TABLE_NAME:-avaliacoes}"
 EMAIL_QUEUE_NAME="${EMAIL_QUEUE_NAME:-email-queue}"
 EMAIL_DLQ_NAME="${EMAIL_DLQ_NAME:-email-queue-dlq}"
 SES_FROM_EMAIL="${SES_FROM_EMAIL:-noreply@example.com}"
+ADMIN_ALERT_EMAIL="${ADMIN_ALERT_EMAIL:-admin@example.com}"
 
 awslocal dynamodb create-table \
   --table-name "${DYNAMODB_TABLE_NAME}" \
@@ -41,8 +42,11 @@ awslocal lambda create-function \
   --role arn:aws:iam::000000000000:role/lambda-role \
   --handler br.com.fiap.serverless.avaliador.handler.AvaliadorHandler::handleRequest \
   --zip-file fileb://lambdas/avaliador/target/avaliador.jar \
-  --environment "Variables={AWS_REGION=${AWS_REGION},DYNAMODB_TABLE_NAME=${DYNAMODB_TABLE_NAME},EMAIL_QUEUE_URL=${QUEUE_URL},LOCALSTACK_ENDPOINT=${LOCALSTACK_ENDPOINT}}" >/dev/null 2>&1 || \
+  --environment "Variables={AWS_REGION=${AWS_REGION},DYNAMODB_TABLE_NAME=${DYNAMODB_TABLE_NAME},EMAIL_QUEUE_URL=${QUEUE_URL},ADMIN_ALERT_EMAIL=${ADMIN_ALERT_EMAIL},LOCALSTACK_ENDPOINT=${LOCALSTACK_ENDPOINT}}" >/dev/null 2>&1 || \
 awslocal lambda update-function-code --function-name avaliador --zip-file fileb://lambdas/avaliador/target/avaliador.jar >/dev/null
+awslocal lambda update-function-configuration \
+  --function-name avaliador \
+  --environment "Variables={AWS_REGION=${AWS_REGION},DYNAMODB_TABLE_NAME=${DYNAMODB_TABLE_NAME},EMAIL_QUEUE_URL=${QUEUE_URL},ADMIN_ALERT_EMAIL=${ADMIN_ALERT_EMAIL},LOCALSTACK_ENDPOINT=${LOCALSTACK_ENDPOINT}}" >/dev/null 2>&1 || true
 
 awslocal lambda create-function \
   --function-name reports-generator \
@@ -52,6 +56,9 @@ awslocal lambda create-function \
   --zip-file fileb://lambdas/reports-generator/target/reports-generator.jar \
   --environment "Variables={AWS_REGION=${AWS_REGION},DYNAMODB_TABLE_NAME=${DYNAMODB_TABLE_NAME},EMAIL_QUEUE_URL=${QUEUE_URL},REPORT_RECIPIENT_EMAIL=${REPORT_RECIPIENT_EMAIL:-admin@example.com},LOCALSTACK_ENDPOINT=${LOCALSTACK_ENDPOINT}}" >/dev/null 2>&1 || \
 awslocal lambda update-function-code --function-name reports-generator --zip-file fileb://lambdas/reports-generator/target/reports-generator.jar >/dev/null
+awslocal lambda update-function-configuration \
+  --function-name reports-generator \
+  --environment "Variables={AWS_REGION=${AWS_REGION},DYNAMODB_TABLE_NAME=${DYNAMODB_TABLE_NAME},EMAIL_QUEUE_URL=${QUEUE_URL},REPORT_RECIPIENT_EMAIL=${REPORT_RECIPIENT_EMAIL:-admin@example.com},LOCALSTACK_ENDPOINT=${LOCALSTACK_ENDPOINT}}" >/dev/null 2>&1 || true
 
 awslocal lambda create-function \
   --function-name email-sender \
@@ -61,6 +68,9 @@ awslocal lambda create-function \
   --zip-file fileb://lambdas/email-sender/target/email-sender.jar \
   --environment "Variables={AWS_REGION=${AWS_REGION},SES_FROM_EMAIL=${SES_FROM_EMAIL},LOCALSTACK_ENDPOINT=${LOCALSTACK_ENDPOINT}}" >/dev/null 2>&1 || \
 awslocal lambda update-function-code --function-name email-sender --zip-file fileb://lambdas/email-sender/target/email-sender.jar >/dev/null
+awslocal lambda update-function-configuration \
+  --function-name email-sender \
+  --environment "Variables={AWS_REGION=${AWS_REGION},SES_FROM_EMAIL=${SES_FROM_EMAIL},LOCALSTACK_ENDPOINT=${LOCALSTACK_ENDPOINT}}" >/dev/null 2>&1 || true
 
 awslocal lambda create-event-source-mapping \
   --function-name email-sender \

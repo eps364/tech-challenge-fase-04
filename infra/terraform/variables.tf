@@ -42,10 +42,15 @@ variable "report_recipient_email" {
   description = "Endereco destinatario dos relatorios."
 }
 
+variable "admin_alert_email" {
+  type        = string
+  description = "Endereco dos administradores para alertas criticos e monitoramento."
+}
+
 variable "report_schedule_expression" {
   type        = string
   description = "Expressao de agendamento do EventBridge Scheduler."
-  default     = "rate(1 day)"
+  default     = "cron(0 12 ? * MON *)"
 }
 
 variable "lambda_runtime" {
