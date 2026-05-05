@@ -18,7 +18,7 @@ resource "aws_cloudwatch_log_group" "email_sender" {
 
 resource "aws_lambda_function" "avaliador" {
   function_name    = "${local.resource_prefix}-avaliador"
-  role             = aws_iam_role.lambda_role.arn
+  role             = aws_iam_role.avaliador_lambda_role.arn
   runtime          = var.lambda_runtime
   handler          = "br.com.fiap.serverless.avaliador.handler.AvaliadorHandler::handleRequest"
   filename         = "${path.root}/../../lambdas/avaliador/target/avaliador.jar"
@@ -29,6 +29,7 @@ resource "aws_lambda_function" "avaliador" {
   environment {
     variables = {
       AWS_REGION          = var.aws_region
+      ADMIN_ALERT_EMAIL   = var.admin_alert_email
       DYNAMODB_TABLE_NAME = aws_dynamodb_table.avaliacoes.name
       EMAIL_QUEUE_URL     = aws_sqs_queue.email_queue.id
     }
@@ -40,7 +41,7 @@ resource "aws_lambda_function" "avaliador" {
 
 resource "aws_lambda_function" "reports_generator" {
   function_name    = "${local.resource_prefix}-reports-generator"
-  role             = aws_iam_role.lambda_role.arn
+  role             = aws_iam_role.reports_generator_lambda_role.arn
   runtime          = var.lambda_runtime
   handler          = "br.com.fiap.serverless.reports.handler.ReportsGeneratorHandler::handleRequest"
   filename         = "${path.root}/../../lambdas/reports-generator/target/reports-generator.jar"
@@ -63,7 +64,7 @@ resource "aws_lambda_function" "reports_generator" {
 
 resource "aws_lambda_function" "email_sender" {
   function_name    = "${local.resource_prefix}-email-sender"
-  role             = aws_iam_role.lambda_role.arn
+  role             = aws_iam_role.email_sender_lambda_role.arn
   runtime          = var.lambda_runtime
   handler          = "br.com.fiap.serverless.email.handler.EmailSenderHandler::handleRequest"
   filename         = "${path.root}/../../lambdas/email-sender/target/email-sender.jar"

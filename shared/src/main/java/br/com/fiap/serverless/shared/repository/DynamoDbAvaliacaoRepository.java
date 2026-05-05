@@ -7,6 +7,7 @@ import java.util.Map;
 
 import br.com.fiap.serverless.shared.model.Avaliacao;
 import br.com.fiap.serverless.shared.model.AvaliacaoStatus;
+import br.com.fiap.serverless.shared.model.Urgencia;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
@@ -26,14 +27,16 @@ public class DynamoDbAvaliacaoRepository implements AvaliacaoRepository {
     public void save(Avaliacao avaliacao) {
         Map<String, AttributeValue> item = new HashMap<>();
         item.put("id", AttributeValue.builder().s(avaliacao.id()).build());
-        item.put("nomeAluno", AttributeValue.builder().s(avaliacao.nomeAluno()).build());
-        item.put("emailAluno", AttributeValue.builder().s(avaliacao.emailAluno()).build());
-        item.put("disciplina", AttributeValue.builder().s(avaliacao.disciplina()).build());
+        item.put("nomeAluno", AttributeValue.builder().s(defaultString(avaliacao.nomeAluno())).build());
+        item.put("emailAluno", AttributeValue.builder().s(defaultString(avaliacao.emailAluno())).build());
+        item.put("disciplina", AttributeValue.builder().s(defaultString(avaliacao.disciplina())).build());
         item.put("nota", AttributeValue.builder().n(avaliacao.nota().toPlainString()).build());
+        item.put("descricao", AttributeValue.builder().s(defaultString(avaliacao.descricao())).build());
+        item.put("urgencia", AttributeValue.builder().s(avaliacao.urgencia().name()).build());
         item.put("status", AttributeValue.builder().s(avaliacao.status().name()).build());
         item.put("createdAt", AttributeValue.builder().s(avaliacao.createdAt()).build());
         item.put("updatedAt", AttributeValue.builder().s(avaliacao.updatedAt()).build());
-        item.put("comentario", AttributeValue.builder().s(avaliacao.comentario() == null ? "" : avaliacao.comentario()).build());
+        item.put("comentario", AttributeValue.builder().s(defaultString(avaliacao.descricao())).build());
 
         dynamoDbClient.putItem(PutItemRequest.builder()
                 .tableName(tableName)
@@ -51,15 +54,39 @@ public class DynamoDbAvaliacaoRepository implements AvaliacaoRepository {
     }
 
     private Avaliacao mapItem(Map<String, AttributeValue> item) {
+        BigDecimal nota = new BigDecimal(item.get("nota").n());
+        String descricao = stringValue(item, "descricao", stringValue(item, "comentario", ""));
+
         return new Avaliacao(
                 item.get("id").s(),
-                item.get("nomeAluno").s(),
-                item.get("emailAluno").s(),
-                item.get("disciplina").s(),
-                new BigDecimal(item.get("nota").n()),
-                item.getOrDefault("comentario", AttributeValue.builder().s("").build()).s(),
+                stringValue(item, "nomeAluno", ""),
+                stringValue(item, "emailAluno", ""),
+                stringValue(item, "disciplina", ""),
+                nota,
+                descricao,
+                urgenciaValue(item, nota),
                 AvaliacaoStatus.valueOf(item.get("status").s()),
                 item.get("createdAt").s(),
                 item.get("updatedAt").s());
+    }
+
+    private String stringValue(Map<String, AttributeValue> item, String key, String fallback) {
+        AttributeValue value = item.get(key);
+        if (value == null || value.s() == null) {
+            return fallback;
+        }
+        return value.s();
+    }
+
+    private String defaultString(String value) {
+        return value == null ? "" : value;
+    }
+
+    private Urgencia urgenciaValue(Map<String, AttributeValue> item, BigDecimal nota) {
+        AttributeValue value = item.get("urgencia");
+        if (value == null || value.s() == null || value.s().isBlank()) {
+            return Urgencia.fromNota(nota);
+        }
+        return Urgencia.valueOf(value.s());
     }
 }

@@ -7,8 +7,9 @@ PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 cd "${PROJECT_ROOT}"
 
 BODY_FILE="${1:-docs/API/email-avaliacao-criada.json}"
+MESSAGE_BODY="$(jq -c . "${BODY_FILE}" | jq -Rs .)"
 awslocal lambda invoke \
   --function-name email-sender \
-  --payload "{\"Records\":[{\"messageId\":\"local-test-1\",\"body\":$(jq -c . "${BODY_FILE}")}]}" \
+  --payload "{\"Records\":[{\"messageId\":\"local-test-1\",\"body\":${MESSAGE_BODY}}]}" \
   /tmp/email-response.json
 cat /tmp/email-response.json

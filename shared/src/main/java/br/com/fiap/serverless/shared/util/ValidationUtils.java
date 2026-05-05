@@ -18,14 +18,11 @@ public final class ValidationUtils {
         if (request == null) {
             throw new ValidationException("Request body is required");
         }
-        if (isBlank(request.nomeAluno())) {
-            throw new ValidationException("nomeAluno is required");
+        if (isBlank(request.descricao())) {
+            throw new ValidationException("descricao is required");
         }
-        if (isBlank(request.emailAluno()) || !EMAIL_PATTERN.matcher(request.emailAluno()).matches()) {
+        if (!isBlank(request.emailAluno()) && !EMAIL_PATTERN.matcher(request.emailAluno()).matches()) {
             throw new ValidationException("emailAluno must be a valid email");
-        }
-        if (isBlank(request.disciplina())) {
-            throw new ValidationException("disciplina is required");
         }
         if (request.nota() == null) {
             throw new ValidationException("nota is required");

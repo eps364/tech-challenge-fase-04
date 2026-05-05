@@ -4,7 +4,7 @@ Projeto acadêmico em Java 17 para AWS Serverless com três Lambdas, API Gateway
 
 ## Visão geral
 
-O sistema registra avaliações de alunos, persiste os dados no DynamoDB, solicita e-mails assíncronos via SQS e gera relatórios periódicos enviados por e-mail.
+O sistema registra feedbacks de alunos, classifica a urgencia pela nota, persiste os dados no DynamoDB, envia alertas criticos por e-mail via SQS/SES e gera relatorios semanais para administradores.
 
 ## Arquitetura
 
@@ -57,7 +57,7 @@ EventBridge Scheduler
 ## Módulos
 
 - `shared`: DTOs, modelos, serialização JSON, validação, adapters AWS e interfaces comuns.
-- `lambdas/avaliador`: recebe `POST /avaliacoes`, valida payload, salva no DynamoDB e publica e-mail na SQS.
+- `lambdas/avaliador`: recebe `POST /avaliacao` e `POST /avaliacoes`, valida payload, classifica urgencia, salva no DynamoDB e publica e-mails na SQS.
 - `lambdas/reports-generator`: executa por agendamento, faz scan da tabela e publica relatório na SQS.
 - `lambdas/email-sender`: consome a fila, monta e-mails e usa SES real ou simulado.
 
@@ -72,6 +72,7 @@ Variáveis principais:
 - `EMAIL_QUEUE_URL`
 - `SES_FROM_EMAIL`
 - `REPORT_RECIPIENT_EMAIL`
+- `ADMIN_ALERT_EMAIL`
 - `LOCALSTACK_ENDPOINT`
 
 No Windows com Lambda rodando via LocalStack, prefira `http://localhost.localstack.cloud:4566`. O uso de `http://localhost:4566` pode falhar quando a Lambda executa em container separado.
@@ -98,15 +99,15 @@ docker compose up -d
 ./scripts/invoke-email-sender-local.sh
 ```
 
-### Windows PowerShell
+No Windows, execute estes mesmos scripts pelo Git Bash ou WSL. O repositório não inclui versões `.ps1` desses atalhos locais.
 
 ```powershell
 Copy-Item .env.example .env
-.\scripts\start-localstack.ps1
-.\scripts\create-local-resources.ps1
-.\scripts\invoke-avaliador-local.ps1
-.\scripts\invoke-reports-local.ps1
-.\scripts\invoke-email-sender-local.ps1
+docker compose up -d
+bash ./scripts/create-local-resources.sh
+bash ./scripts/invoke-avaliador-local.sh
+bash ./scripts/invoke-reports-local.sh
+bash ./scripts/invoke-email-sender-local.sh
 ```
 
 Se o Docker responder com `Acesso negado`, abra o PowerShell como administrador ou ajuste a permissão do Docker Desktop para o seu usuário.
@@ -120,13 +121,40 @@ awslocal lambda list-functions
 awslocal ses list-identities
 ```
 
+### Consultando o DynamoDB local
+
+A tabela criada localmente por padrÃ£o Ã© `avaliacoes`.
+
+```bash
+# listar as tabelas DynamoDB no LocalStack
+awslocal dynamodb list-tables
+
+# ver todo o conteudo da tabela
+awslocal dynamodb scan --table-name avaliacoes
+
+# ver apenas os itens retornados
+awslocal dynamodb scan --table-name avaliacoes --query Items
+
+# buscar um item especifico pela chave primaria id
+awslocal dynamodb get-item --table-name avaliacoes --key '{"id":{"S":"SEU-ID-AQUI"}}'
+```
+
+Se preferir usar o AWS CLI comum apontando para o LocalStack:
+
+```bash
+aws dynamodb scan \
+  --table-name avaliacoes \
+  --endpoint-url http://localhost:4566 \
+  --region us-east-1
+```
+
 ## Fluxo local esperado
 
 1. A Lambda `avaliador` recebe o payload de [docs/API/avaliacao-request.json](./docs/API/avaliacao-request.json).
-2. O registro é salvo na tabela DynamoDB local.
-3. Uma mensagem é enviada para a fila `email-queue`.
+2. O feedback e salvo na tabela DynamoDB local com urgencia calculada pela nota.
+3. Se a urgencia for `CRITICA`, uma mensagem de alerta administrativo e enviada para a fila `email-queue`.
 4. A Lambda `email-sender` consome a mensagem e registra envio simulado.
-5. A Lambda `reports-generator` consulta a tabela, calcula o resumo e publica novo e-mail na fila.
+5. A Lambda `reports-generator` consulta a tabela, calcula o relatorio semanal e publica novo e-mail na fila.
 
 ## Testes e build
 
@@ -158,13 +186,13 @@ Arquivos em `infra/terraform` provisionam:
 
 - DynamoDB
 - SQS principal e DLQ
-- IAM roles e policies mínimas
+- IAM roles e policies minimas separadas por Lambda
 - 3 Lambdas Java
-- HTTP API Gateway com `POST /avaliacoes`
+- HTTP API Gateway com `POST /avaliacao` e rota legada `POST /avaliacoes`
 - Event source mapping SQS -> EmailSender
 - EventBridge Scheduler -> ReportsGenerator
 - SES email identity
-- CloudWatch Log Groups
+- CloudWatch Log Groups, Alarms, Dashboard e SNS para alertas de monitoramento
 
 Fluxo:
 
@@ -215,6 +243,7 @@ Secrets esperados:
 - `AWS_REGION`
 - `SES_FROM_EMAIL`
 - `REPORT_RECIPIENT_EMAIL`
+- `ADMIN_ALERT_EMAIL`
 
 Para um cenário mais robusto, recomenda-se trocar access keys por OIDC + role assumida.
 
@@ -230,7 +259,7 @@ Para um cenário mais robusto, recomenda-se trocar access keys por OIDC + role a
 - Adicionar testes de integração com LocalStack em pipeline dedicada.
 - Evoluir para templates de e-mail externos.
 - Atualizar status da avaliação após envio do e-mail.
-- Adicionar métricas e alarmes de falha em produção.
+- Adicionar testes de contrato para API Gateway em pipeline dedicada.
 
 ## Setup Real no Windows com Git Bash
 

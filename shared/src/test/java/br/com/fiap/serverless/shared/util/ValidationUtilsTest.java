@@ -18,8 +18,20 @@ class ValidationUtilsTest {
                 "Luiz Silva",
                 "luiz@email.com",
                 "Arquitetura Java Serverless",
-                BigDecimal.valueOf(9.5),
+                BigDecimal.valueOf(9),
                 "Excelente entrega");
+
+        assertDoesNotThrow(() -> ValidationUtils.validate(request));
+    }
+
+    @Test
+    void shouldValidateMinimalPayload() {
+        CreateAvaliacaoRequest request = new CreateAvaliacaoRequest(
+                null,
+                null,
+                null,
+                BigDecimal.valueOf(3),
+                "A aula travou");
 
         assertDoesNotThrow(() -> ValidationUtils.validate(request));
     }
@@ -30,8 +42,8 @@ class ValidationUtilsTest {
                 "Luiz Silva",
                 "email-invalido",
                 "Arquitetura Java Serverless",
-                BigDecimal.valueOf(9.5),
-                null);
+                BigDecimal.valueOf(9),
+                "Boa aula");
 
         assertThrows(ValidationException.class, () -> ValidationUtils.validate(request));
     }

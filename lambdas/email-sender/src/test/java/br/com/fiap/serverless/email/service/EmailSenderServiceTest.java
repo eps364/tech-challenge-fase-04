@@ -23,9 +23,9 @@ class EmailSenderServiceTest {
                 {
                   "type":"AVALIACAO_CRIADA",
                   "to":"luiz@email.com",
-                  "subject":"Avaliação registrada",
+                  "subject":"Avaliacao registrada",
                   "template":"avaliacao-criada",
-                  "payload":{"nomeAluno":"Luiz Silva","disciplina":"Arquitetura Java Serverless","nota":9.5}
+                  "payload":{"nomeAluno":"Luiz Silva","disciplina":"Arquitetura Java Serverless","nota":9}
                 }
                 """;
 
@@ -35,14 +35,38 @@ class EmailSenderServiceTest {
     }
 
     @Test
+    void shouldParseAvaliacaoCriticaMessage() {
+        String body = """
+                {
+                  "type":"AVALIACAO_CRITICA",
+                  "to":"admin@example.com",
+                  "subject":"Alerta de feedback critico",
+                  "template":"avaliacao-critica",
+                  "payload":{"descricao":"Aula travando","urgencia":"CRITICA","dataEnvio":"2026-04-28T10:00:00Z","nota":3}
+                }
+                """;
+
+        service.process(body);
+
+        verify(emailService).send(eq("admin@example.com"), org.mockito.ArgumentMatchers.any(EmailContent.class));
+    }
+
+    @Test
     void shouldParseRelatorioGeradoMessage() {
         String body = """
                 {
                   "type":"RELATORIO_GERADO",
                   "to":"admin@example.com",
-                  "subject":"Relatório de avaliações",
+                  "subject":"Relatorio semanal de avaliacoes",
                   "template":"relatorio-avaliacoes",
-                  "payload":{"totalAvaliacoes":10,"mediaNotas":8.7,"maiorNota":10,"menorNota":6,"dataGeracao":"2026-04-28T10:00:00Z"}
+                  "payload":{
+                    "totalAvaliacoes":10,
+                    "mediaNotas":8.7,
+                    "quantidadeAvaliacoesPorDia":{"2026-04-28":4},
+                    "quantidadeAvaliacoesPorUrgencia":{"BAIXA":6,"CRITICA":1},
+                    "feedbacks":[{"descricao":"Aula boa","urgencia":"BAIXA","dataEnvio":"2026-04-28T10:00:00Z"}],
+                    "dataGeracao":"2026-04-28T10:00:00Z"
+                  }
                 }
                 """;
 
@@ -57,14 +81,22 @@ class EmailSenderServiceTest {
                 {
                   "type":"RELATORIO_GERADO",
                   "to":"admin@example.com",
-                  "subject":"Relatório de avaliações",
+                  "subject":"Relatorio semanal de avaliacoes",
                   "template":"relatorio-avaliacoes",
-                  "payload":{"totalAvaliacoes":10,"mediaNotas":8.7,"maiorNota":10,"menorNota":6,"dataGeracao":"2026-04-28T10:00:00Z"}
+                  "payload":{
+                    "totalAvaliacoes":10,
+                    "mediaNotas":8.7,
+                    "quantidadeAvaliacoesPorDia":{"2026-04-28":4},
+                    "quantidadeAvaliacoesPorUrgencia":{"BAIXA":6,"CRITICA":1},
+                    "feedbacks":[{"descricao":"Aula boa","urgencia":"BAIXA","dataEnvio":"2026-04-28T10:00:00Z"}],
+                    "dataGeracao":"2026-04-28T10:00:00Z"
+                  }
                 }
                 """, br.com.fiap.serverless.shared.model.EmailMessage.class));
 
-        org.junit.jupiter.api.Assertions.assertTrue(content.textBody().contains("Total de avaliações: 10"));
-        org.junit.jupiter.api.Assertions.assertTrue(content.htmlBody().contains("<h1>Relatório de avaliações</h1>"));
+        org.junit.jupiter.api.Assertions.assertTrue(content.textBody().contains("Total de avaliacoes: 10"));
+        org.junit.jupiter.api.Assertions.assertTrue(content.textBody().contains("Quantidade de avaliacoes por urgencia"));
+        org.junit.jupiter.api.Assertions.assertTrue(content.htmlBody().contains("<h1>Relatorio semanal de avaliacoes</h1>"));
     }
 
     @Test
