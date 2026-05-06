@@ -1,51 +1,50 @@
-# Documentação da API — Plataforma de Feedback
+# API Local
 
-## Endpoint: POST /avaliacao
-Recebe um feedback do aluno.
+## POST /avaliacao
 
-### Exemplo de Request
+Endpoint principal do Tech Challenge para registrar feedbacks.
+
+Payload minimo:
+
 ```json
 {
-  "descricao": "A aula foi excelente, mas o áudio estava baixo.",
-  "nota": 7
+  "descricao": "A aula travou varias vezes e nao consegui acompanhar o conteudo.",
+  "nota": 3
 }
 ```
 
-### Exemplo de Response (201)
+Campos opcionais aceitos para enriquecer a demonstracao e enviar confirmacao ao estudante:
+
+```json
+{
+  "descricao": "Excelente entrega do projeto.",
+  "nota": 9,
+  "nomeAluno": "Luiz Silva",
+  "emailAluno": "luiz@email.com",
+  "disciplina": "Arquitetura Java Serverless"
+}
+```
+
+`POST /avaliacoes` continua disponivel como rota de compatibilidade.
+
+Resposta esperada:
+
 ```json
 {
   "id": "uuid",
-  "descricao": "A aula foi excelente, mas o áudio estava baixo.",
-  "nota": 7,
-  "dataEnvio": "2026-03-25T14:00:00Z",
-  "urgencia": "normal"
+  "message": "Avaliacao registrada com sucesso."
 }
 ```
 
-## Dados para Notificação de Urgência
-```json
-{
-  "descricao": "Problema grave na plataforma.",
-  "urgencia": "alta",
-  "dataEnvio": "2026-03-25T14:00:00Z"
-}
-```
+## Regra de urgencia
 
-## Dados para Relatório Semanal
-```json
-{
-  "descricao": "Resumo semanal de feedbacks.",
-  "urgencia": "alta",
-  "dataEnvio": "2026-03-25T14:00:00Z",
-  "qtdAvaliacoesPorDia": {
-    "2026-03-24": 5,
-    "2026-03-25": 8
-  },
-  "qtdAvaliacoesPorUrgencia": {
-    "alta": 2,
-    "normal": 11
-  }
-}
-```
+- `0` a `4`: `CRITICA`, dispara e-mail automatico aos administradores.
+- `5` a `6`: `ALTA`.
+- `7` a `8`: `MEDIA`.
+- `9` a `10`: `BAIXA`.
 
-> Atualize os exemplos conforme a implementação e mantenha a coleção de testes neste diretório.
+## Mensagens SQS
+
+- [email-avaliacao-criada.json](./email-avaliacao-criada.json)
+- [email-avaliacao-critica.json](./email-avaliacao-critica.json)
+- [email-relatorio-gerado.json](./email-relatorio-gerado.json)

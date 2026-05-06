@@ -1,0 +1,12 @@
+{
+  "type": "AVALIACAO_CRITICA",
+  "to": "admin@example.com",
+  "subject": "Alerta de feedback critico",
+  "template": "avaliacao-critica",
+  "payload": {
+    "descricao": "A aula travou varias vezes e nao consegui acompanhar o conteudo.",
+    "urgencia": "CRITICA",
+    "dataEnvio": "2026-04-28T10:00:00Z",
+    "nota": 3
+  }
+}

@@ -1,47 +1,72 @@
-# Exemplo de Payloads e Respostas
+# Exemplos de Payloads
 
-## POST /avaliacao
-### Request
+## Avaliacao minima
+
 ```json
 {
-  "descricao": "A aula foi excelente, mas o áudio estava baixo.",
-  "nota": 7
+  "descricao": "A aula travou varias vezes e nao consegui acompanhar o conteudo.",
+  "nota": 3
 }
 ```
 
-### Response
+## Avaliacao completa
+
 ```json
 {
-  "id": "uuid",
-  "descricao": "A aula foi excelente, mas o áudio estava baixo.",
-  "nota": 7,
-  "dataEnvio": "2026-03-25T14:00:00Z",
-  "urgencia": "normal"
+  "descricao": "Excelente entrega do projeto.",
+  "nota": 9,
+  "nomeAluno": "Luiz Silva",
+  "emailAluno": "luiz@email.com",
+  "disciplina": "Arquitetura Java Serverless"
 }
 ```
 
-## Notificação de Urgência
+## E-mail de alerta critico
+
 ```json
 {
-  "descricao": "Problema grave na plataforma.",
-  "urgencia": "alta",
-  "dataEnvio": "2026-03-25T14:00:00Z"
+  "type": "AVALIACAO_CRITICA",
+  "to": "admin@example.com",
+  "subject": "Alerta de feedback critico",
+  "template": "avaliacao-critica",
+  "payload": {
+    "descricao": "A aula travou varias vezes e nao consegui acompanhar o conteudo.",
+    "urgencia": "CRITICA",
+    "dataEnvio": "2026-04-28T10:00:00Z",
+    "nota": 3
+  }
 }
 ```
 
-## Relatório Semanal
+## E-mail de relatorio semanal
+
 ```json
 {
-  "descricao": "Resumo semanal de feedbacks.",
-  "urgencia": "alta",
-  "dataEnvio": "2026-03-25T14:00:00Z",
-  "qtdAvaliacoesPorDia": {
-    "2026-03-24": 5,
-    "2026-03-25": 8
-  },
-  "qtdAvaliacoesPorUrgencia": {
-    "alta": 2,
-    "normal": 11
+  "type": "RELATORIO_GERADO",
+  "to": "admin@example.com",
+  "subject": "Relatorio semanal de avaliacoes",
+  "template": "relatorio-avaliacoes",
+  "payload": {
+    "totalAvaliacoes": 10,
+    "mediaNotas": 7.8,
+    "quantidadeAvaliacoesPorDia": {
+      "2026-04-27": 4,
+      "2026-04-28": 6
+    },
+    "quantidadeAvaliacoesPorUrgencia": {
+      "BAIXA": 5,
+      "MEDIA": 3,
+      "ALTA": 1,
+      "CRITICA": 1
+    },
+    "feedbacks": [
+      {
+        "descricao": "A aula travou varias vezes e nao consegui acompanhar o conteudo.",
+        "urgencia": "CRITICA",
+        "dataEnvio": "2026-04-28T10:00:00Z"
+      }
+    ],
+    "dataGeracao": "2026-04-28T10:00:00Z"
   }
 }
 ```

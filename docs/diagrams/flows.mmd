@@ -1,25 +1,30 @@
-%% Main Business Flows - Tech Challenge Fase 04
-%% This diagram shows the main flows: feedback submission, urgent notification, and weekly report.
-%% Language: English
+%% Fluxos principais - Tech Challenge Fase 04
 
 sequenceDiagram
-    participant User as User (Student)
-    participant API as API Gateway / Serverless Function
-    participant DB as Managed Database
-    participant Notification as Notification Service
-    participant Admin as Admin/Analyst
-    participant Report as Report Service
+    participant Student as Estudante
+    participant API as API Gateway
+    participant Avaliador as Lambda Avaliador
+    participant DB as DynamoDB
+    participant Queue as SQS EmailQueue
+    participant Email as Lambda EmailSender
+    participant Admin as Administradores
+    participant Reports as Lambda ReportsGenerator
+    participant Scheduler as EventBridge Scheduler
 
-    %% Feedback Submission
-    User->>API: POST /avaliacao (feedback)
-    API->>DB: Store feedback
-    API-->>User: 201 Created (feedback stored)
+    Student->>API: POST /avaliacao {descricao, nota}
+    API->>Avaliador: Invoke
+    Avaliador->>Avaliador: Classifica urgencia pela nota
+    Avaliador->>DB: Salva feedback
+    alt urgencia CRITICA
+        Avaliador->>Queue: Publica alerta critico
+        Queue->>Email: Consome mensagem
+        Email-->>Admin: Envia descricao, urgencia e data de envio
+    end
+    Avaliador-->>Student: 201 Created
 
-    %% Urgent Notification Flow
-    API->>Notification: Send urgent notification (if needed)
-    Notification-->>User: Notify user (urgent case)
-
-    %% Weekly Report Flow
-    API->>Report: Trigger weekly report (scheduled)
-    Report->>DB: Fetch feedback data
-    Report-->>Admin: Send weekly report
+    Scheduler->>Reports: Executa semanalmente
+    Reports->>DB: Busca feedbacks dos ultimos 7 dias
+    Reports->>Reports: Calcula media, contagem por dia e por urgencia
+    Reports->>Queue: Publica relatorio semanal
+    Queue->>Email: Consome mensagem
+    Email-->>Admin: Envia relatorio semanal

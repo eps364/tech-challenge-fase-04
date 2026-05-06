@@ -1,0 +1,13 @@
+target/
+.m2/
+.idea/
+.vscode/
+*.iml
+.env
+.terraform/
+.terraform.lock.hcl
+terraform.tfstate
+terraform.tfstate.*
+*.zip
+*.jar
+.DS_Store
