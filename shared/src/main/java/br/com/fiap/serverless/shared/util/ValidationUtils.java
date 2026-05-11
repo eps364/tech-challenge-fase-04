@@ -1,15 +1,9 @@
 package br.com.fiap.serverless.shared.util;
 
-import java.math.BigDecimal;
-import java.util.regex.Pattern;
-
 import br.com.fiap.serverless.shared.dto.CreateAvaliacaoRequest;
 import br.com.fiap.serverless.shared.exception.ValidationException;
 
 public final class ValidationUtils {
-
-    private static final Pattern EMAIL_PATTERN =
-            Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
 
     private ValidationUtils() {
     }
@@ -21,14 +15,11 @@ public final class ValidationUtils {
         if (isBlank(request.descricao())) {
             throw new ValidationException("descricao is required");
         }
-        if (!isBlank(request.emailAluno()) && !EMAIL_PATTERN.matcher(request.emailAluno()).matches()) {
-            throw new ValidationException("emailAluno must be a valid email");
-        }
         if (request.nota() == null) {
             throw new ValidationException("nota is required");
         }
-        BigDecimal nota = request.nota();
-        if (nota.compareTo(BigDecimal.ZERO) < 0 || nota.compareTo(BigDecimal.TEN) > 0) {
+        int nota = request.nota();
+        if (nota < 0 || nota > 10) {
             throw new ValidationException("nota must be between 0 and 10");
         }
     }

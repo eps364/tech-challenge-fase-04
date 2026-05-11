@@ -27,16 +27,12 @@ public class DynamoDbAvaliacaoRepository implements AvaliacaoRepository {
     public void save(Avaliacao avaliacao) {
         Map<String, AttributeValue> item = new HashMap<>();
         item.put("id", AttributeValue.builder().s(avaliacao.id()).build());
-        item.put("nomeAluno", AttributeValue.builder().s(defaultString(avaliacao.nomeAluno())).build());
-        item.put("emailAluno", AttributeValue.builder().s(defaultString(avaliacao.emailAluno())).build());
-        item.put("disciplina", AttributeValue.builder().s(defaultString(avaliacao.disciplina())).build());
-        item.put("nota", AttributeValue.builder().n(avaliacao.nota().toPlainString()).build());
         item.put("descricao", AttributeValue.builder().s(defaultString(avaliacao.descricao())).build());
+        item.put("nota", AttributeValue.builder().n(avaliacao.nota().toPlainString()).build());
         item.put("urgencia", AttributeValue.builder().s(avaliacao.urgencia().name()).build());
         item.put("status", AttributeValue.builder().s(avaliacao.status().name()).build());
         item.put("createdAt", AttributeValue.builder().s(avaliacao.createdAt()).build());
         item.put("updatedAt", AttributeValue.builder().s(avaliacao.updatedAt()).build());
-        item.put("comentario", AttributeValue.builder().s(defaultString(avaliacao.descricao())).build());
 
         dynamoDbClient.putItem(PutItemRequest.builder()
                 .tableName(tableName)
@@ -59,11 +55,8 @@ public class DynamoDbAvaliacaoRepository implements AvaliacaoRepository {
 
         return new Avaliacao(
                 item.get("id").s(),
-                stringValue(item, "nomeAluno", ""),
-                stringValue(item, "emailAluno", ""),
-                stringValue(item, "disciplina", ""),
-                nota,
                 descricao,
+                nota,
                 urgenciaValue(item, nota),
                 AvaliacaoStatus.valueOf(item.get("status").s()),
                 item.get("createdAt").s(),

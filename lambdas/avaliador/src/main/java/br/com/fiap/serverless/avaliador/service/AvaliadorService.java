@@ -1,5 +1,6 @@
 package br.com.fiap.serverless.avaliador.service;
 
+import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.Map;
@@ -38,43 +39,24 @@ public class AvaliadorService {
 
         String id = UUID.randomUUID().toString();
         String now = Instant.now(clock).toString();
-        Urgencia urgencia = Urgencia.fromNota(request.nota());
+        BigDecimal nota = BigDecimal.valueOf(request.nota());
+        Urgencia urgencia = Urgencia.fromNota(nota);
 
         Avaliacao avaliacao = new Avaliacao(
                 id,
-                request.nomeAluno(),
-                request.emailAluno(),
-                request.disciplina(),
-                request.nota(),
                 request.descricao(),
+                nota,
                 urgencia,
-                isBlank(request.emailAluno()) && !urgencia.isCritica()
-                        ? AvaliacaoStatus.CREATED
-                        : AvaliacaoStatus.EMAIL_REQUESTED,
+                urgencia.isCritica() ? AvaliacaoStatus.EMAIL_REQUESTED : AvaliacaoStatus.CREATED,
                 now,
                 now);
 
         avaliacaoRepository.save(avaliacao);
-        if (!isBlank(request.emailAluno())) {
-            emailQueuePublisher.publish(buildConfirmationEmailMessage(request));
-        }
         if (urgencia.isCritica()) {
             emailQueuePublisher.publish(buildCriticalAlertEmailMessage(avaliacao));
         }
 
         return new CreateAvaliacaoResponse(id, "Avaliacao registrada com sucesso.");
-    }
-
-    EmailMessage buildConfirmationEmailMessage(CreateAvaliacaoRequest request) {
-        return new EmailMessage(
-                EmailType.AVALIACAO_CRIADA,
-                request.emailAluno(),
-                "Avaliacao registrada",
-                "avaliacao-criada",
-                Map.of(
-                        "nomeAluno", defaultString(request.nomeAluno(), "estudante"),
-                        "disciplina", defaultString(request.disciplina(), "aula avaliada"),
-                        "nota", request.nota()));
     }
 
     EmailMessage buildCriticalAlertEmailMessage(Avaliacao avaliacao) {
@@ -88,13 +70,5 @@ public class AvaliadorService {
                         "urgencia", avaliacao.urgencia().name(),
                         "dataEnvio", avaliacao.dataEnvio(),
                         "nota", avaliacao.nota()));
-    }
-
-    private boolean isBlank(String value) {
-        return value == null || value.isBlank();
-    }
-
-    private String defaultString(String value, String fallback) {
-        return isBlank(value) ? fallback : value;
     }
 }
