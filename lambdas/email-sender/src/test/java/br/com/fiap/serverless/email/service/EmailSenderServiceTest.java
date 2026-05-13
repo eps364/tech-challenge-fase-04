@@ -18,23 +18,6 @@ class EmailSenderServiceTest {
     private final EmailSenderService service = new EmailSenderService(emailService, renderer);
 
     @Test
-    void shouldParseAvaliacaoCriadaMessage() {
-        String body = """
-                {
-                  "type":"AVALIACAO_CRIADA",
-                  "to":"luiz@email.com",
-                  "subject":"Avaliacao registrada",
-                  "template":"avaliacao-criada",
-                  "payload":{"nomeAluno":"Luiz Silva","disciplina":"Arquitetura Java Serverless","nota":9}
-                }
-                """;
-
-        service.process(body);
-
-        verify(emailService).send(eq("luiz@email.com"), org.mockito.ArgumentMatchers.any(EmailContent.class));
-    }
-
-    @Test
     void shouldParseAvaliacaoCriticaMessage() {
         String body = """
                 {

@@ -1,7 +1,5 @@
 package br.com.fiap.serverless.shared.util;
 
-import java.math.BigDecimal;
-
 import org.junit.jupiter.api.Test;
 
 import br.com.fiap.serverless.shared.dto.CreateAvaliacaoRequest;
@@ -15,11 +13,8 @@ class ValidationUtilsTest {
     @Test
     void shouldValidateValidPayload() {
         CreateAvaliacaoRequest request = new CreateAvaliacaoRequest(
-                "Luiz Silva",
-                "luiz@email.com",
-                "Arquitetura Java Serverless",
-                BigDecimal.valueOf(9),
-                "Excelente entrega");
+                "Excelente entrega",
+                9);
 
         assertDoesNotThrow(() -> ValidationUtils.validate(request));
     }
@@ -27,23 +22,17 @@ class ValidationUtilsTest {
     @Test
     void shouldValidateMinimalPayload() {
         CreateAvaliacaoRequest request = new CreateAvaliacaoRequest(
-                null,
-                null,
-                null,
-                BigDecimal.valueOf(3),
-                "A aula travou");
+                "A aula travou",
+                3);
 
         assertDoesNotThrow(() -> ValidationUtils.validate(request));
     }
 
     @Test
-    void shouldRejectInvalidEmail() {
+    void shouldRejectMissingNota() {
         CreateAvaliacaoRequest request = new CreateAvaliacaoRequest(
-                "Luiz Silva",
-                "email-invalido",
-                "Arquitetura Java Serverless",
-                BigDecimal.valueOf(9),
-                "Boa aula");
+                "Boa aula",
+                null);
 
         assertThrows(ValidationException.class, () -> ValidationUtils.validate(request));
     }
