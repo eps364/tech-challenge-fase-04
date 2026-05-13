@@ -4,7 +4,7 @@
 
 Endpoint principal do Tech Challenge para registrar feedbacks.
 
-Payload minimo:
+Payload aceito:
 
 ```json
 {
@@ -13,17 +13,7 @@ Payload minimo:
 }
 ```
 
-Campos opcionais aceitos para enriquecer a demonstracao e enviar confirmacao ao estudante:
-
-```json
-{
-  "descricao": "Excelente entrega do projeto.",
-  "nota": 9,
-  "nomeAluno": "Luiz Silva",
-  "emailAluno": "luiz@email.com",
-  "disciplina": "Arquitetura Java Serverless"
-}
-```
+`nota` deve ser um numero inteiro entre `0` e `10`.
 
 `POST /avaliacoes` continua disponivel como rota de compatibilidade.
 
@@ -45,6 +35,5 @@ Resposta esperada:
 
 ## Mensagens SQS
 
-- [email-avaliacao-criada.json](./email-avaliacao-criada.json)
 - [email-avaliacao-critica.json](./email-avaliacao-critica.json)
 - [email-relatorio-gerado.json](./email-relatorio-gerado.json)

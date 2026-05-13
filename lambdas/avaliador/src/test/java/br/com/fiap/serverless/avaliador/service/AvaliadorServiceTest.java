@@ -11,6 +11,7 @@ import org.mockito.ArgumentCaptor;
 import br.com.fiap.serverless.shared.dto.CreateAvaliacaoRequest;
 import br.com.fiap.serverless.shared.exception.ValidationException;
 import br.com.fiap.serverless.shared.model.Avaliacao;
+import br.com.fiap.serverless.shared.model.AvaliacaoStatus;
 import br.com.fiap.serverless.shared.model.EmailMessage;
 import br.com.fiap.serverless.shared.model.EmailType;
 import br.com.fiap.serverless.shared.model.Urgencia;
@@ -19,7 +20,9 @@ import br.com.fiap.serverless.shared.repository.AvaliacaoRepository;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -31,35 +34,28 @@ class AvaliadorServiceTest {
     private final AvaliadorService service = new AvaliadorService(repository, publisher, clock, "admin@example.com");
 
     @Test
-    void shouldCreateAvaliacaoAndPublishConfirmationEmailWhenStudentEmailExists() {
+    void shouldCreateAvaliacaoWithoutPublishingEmailWhenScoreIsNotCritical() {
         CreateAvaliacaoRequest request = new CreateAvaliacaoRequest(
-                "Luiz Silva",
-                "luiz@email.com",
-                "Arquitetura Java Serverless",
-                BigDecimal.valueOf(9),
-                "Excelente entrega");
+                "Excelente entrega",
+                9);
 
         service.process(request);
 
         ArgumentCaptor<Avaliacao> avaliacaoCaptor = ArgumentCaptor.forClass(Avaliacao.class);
         verify(repository).save(avaliacaoCaptor.capture());
         assertEquals("Excelente entrega", avaliacaoCaptor.getValue().descricao());
+        assertEquals(BigDecimal.valueOf(9), avaliacaoCaptor.getValue().nota());
         assertEquals(Urgencia.BAIXA, avaliacaoCaptor.getValue().urgencia());
+        assertEquals(AvaliacaoStatus.CREATED, avaliacaoCaptor.getValue().status());
 
-        ArgumentCaptor<EmailMessage> emailCaptor = ArgumentCaptor.forClass(EmailMessage.class);
-        verify(publisher).publish(emailCaptor.capture());
-        assertEquals(EmailType.AVALIACAO_CRIADA, emailCaptor.getValue().type());
-        assertEquals("luiz@email.com", emailCaptor.getValue().to());
+        verify(publisher, never()).publish(any(EmailMessage.class));
     }
 
     @Test
     void shouldAcceptMinimalPayloadFromChallengeStatement() {
         CreateAvaliacaoRequest request = new CreateAvaliacaoRequest(
-                null,
-                null,
-                null,
-                BigDecimal.valueOf(8),
-                "Conteudo claro e bem conduzido");
+                "Conteudo claro e bem conduzido",
+                8);
 
         service.process(request);
 
@@ -72,13 +68,14 @@ class AvaliadorServiceTest {
     @Test
     void shouldPublishCriticalAlertForLowScore() {
         CreateAvaliacaoRequest request = new CreateAvaliacaoRequest(
-                null,
-                null,
-                null,
-                BigDecimal.valueOf(3),
-                "A aula travou e nao consegui acompanhar");
+                "A aula travou e nao consegui acompanhar",
+                3);
 
         service.process(request);
+
+        ArgumentCaptor<Avaliacao> avaliacaoCaptor = ArgumentCaptor.forClass(Avaliacao.class);
+        verify(repository).save(avaliacaoCaptor.capture());
+        assertEquals(AvaliacaoStatus.EMAIL_REQUESTED, avaliacaoCaptor.getValue().status());
 
         ArgumentCaptor<EmailMessage> captor = ArgumentCaptor.forClass(EmailMessage.class);
         verify(publisher).publish(captor.capture());
@@ -88,39 +85,21 @@ class AvaliadorServiceTest {
     }
 
     @Test
-    void shouldPublishConfirmationAndCriticalAlertWhenCriticalFeedbackHasStudentEmail() {
+    void shouldPublishOnlyCriticalAlertForLowScore() {
         CreateAvaliacaoRequest request = new CreateAvaliacaoRequest(
-                "Luiz Silva",
-                "luiz@email.com",
-                "Arquitetura Java Serverless",
-                BigDecimal.valueOf(2),
-                "Problema critico");
+                "Problema critico",
+                2);
 
         service.process(request);
 
-        verify(publisher, times(2)).publish(org.mockito.ArgumentMatchers.any(EmailMessage.class));
+        verify(publisher, times(1)).publish(any(EmailMessage.class));
     }
 
     @Test
     void shouldRejectMissingDescription() {
         CreateAvaliacaoRequest request = new CreateAvaliacaoRequest(
                 null,
-                null,
-                null,
-                BigDecimal.valueOf(9),
-                null);
-
-        assertThrows(ValidationException.class, () -> service.process(request));
-    }
-
-    @Test
-    void shouldRejectInvalidEmailWhenProvided() {
-        CreateAvaliacaoRequest request = new CreateAvaliacaoRequest(
-                "Luiz Silva",
-                "invalido",
-                "Arquitetura Java Serverless",
-                BigDecimal.valueOf(9),
-                "Boa aula");
+                9);
 
         assertThrows(ValidationException.class, () -> service.process(request));
     }
@@ -128,11 +107,8 @@ class AvaliadorServiceTest {
     @Test
     void shouldRejectNotaOutOfRange() {
         CreateAvaliacaoRequest request = new CreateAvaliacaoRequest(
-                null,
-                null,
-                null,
-                BigDecimal.valueOf(11),
-                "Nota invalida");
+                "Nota invalida",
+                11);
 
         assertThrows(ValidationException.class, () -> service.process(request));
     }

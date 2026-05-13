@@ -11,9 +11,6 @@ import br.com.fiap.serverless.shared.model.EmailType;
 public class EmailTemplateRenderer {
 
     public EmailContent render(EmailMessage message) {
-        if (message.type() == EmailType.AVALIACAO_CRIADA) {
-            return renderAvaliacaoCriada(message);
-        }
         if (message.type() == EmailType.AVALIACAO_CRITICA) {
             return renderAvaliacaoCritica(message);
         }
@@ -21,22 +18,6 @@ public class EmailTemplateRenderer {
             return renderRelatorio(message);
         }
         throw new ValidationException("Unsupported email type: " + message.type());
-    }
-
-    private EmailContent renderAvaliacaoCriada(EmailMessage message) {
-        Map<String, Object> payload = message.payload();
-        String text = """
-                Ola %s,
-
-                Sua avaliacao da disciplina %s foi registrada com a nota %s.
-                """.formatted(payload.get("nomeAluno"), payload.get("disciplina"), payload.get("nota"));
-        String html = """
-                <html><body><h1>Avaliacao registrada</h1><p>Ola %s,</p><p>Sua avaliacao da disciplina <strong>%s</strong> foi registrada com a nota <strong>%s</strong>.</p></body></html>
-                """.formatted(
-                escapeHtml(payload.get("nomeAluno")),
-                escapeHtml(payload.get("disciplina")),
-                escapeHtml(payload.get("nota")));
-        return new EmailContent(message.subject(), text, html);
     }
 
     private EmailContent renderAvaliacaoCritica(EmailMessage message) {

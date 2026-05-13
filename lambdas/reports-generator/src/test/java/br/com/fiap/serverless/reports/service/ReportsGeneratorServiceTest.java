@@ -67,11 +67,8 @@ class ReportsGeneratorServiceTest {
     private Avaliacao avaliacao(String id, int nota, String createdAt) {
         return new Avaliacao(
                 id,
-                "Aluno",
-                "aluno@email.com",
-                "Disciplina",
-                BigDecimal.valueOf(nota),
                 "Descricao " + id,
+                BigDecimal.valueOf(nota),
                 Urgencia.fromNota(BigDecimal.valueOf(nota)),
                 AvaliacaoStatus.CREATED,
                 createdAt,

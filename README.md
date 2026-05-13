@@ -57,7 +57,7 @@ EventBridge Scheduler
 ## Módulos
 
 - `shared`: DTOs, modelos, serialização JSON, validação, adapters AWS e interfaces comuns.
-- `lambdas/avaliador`: recebe `POST /avaliacao` e `POST /avaliacoes`, valida payload, classifica urgencia, salva no DynamoDB e publica e-mails na SQS.
+- `lambdas/avaliador`: recebe `POST /avaliacao` e `POST /avaliacoes`, valida `descricao` e `nota`, classifica urgencia, salva no DynamoDB e publica alertas criticos na SQS.
 - `lambdas/reports-generator`: executa por agendamento, faz scan da tabela e publica relatório na SQS.
 - `lambdas/email-sender`: consome a fila, monta e-mails e usa SES real ou simulado.
 

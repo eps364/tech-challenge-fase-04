@@ -1,23 +1,11 @@
 # Exemplos de Payloads
 
-## Avaliacao minima
+## Avaliacao
 
 ```json
 {
   "descricao": "A aula travou varias vezes e nao consegui acompanhar o conteudo.",
   "nota": 3
-}
-```
-
-## Avaliacao completa
-
-```json
-{
-  "descricao": "Excelente entrega do projeto.",
-  "nota": 9,
-  "nomeAluno": "Luiz Silva",
-  "emailAluno": "luiz@email.com",
-  "disciplina": "Arquitetura Java Serverless"
 }
 ```
 

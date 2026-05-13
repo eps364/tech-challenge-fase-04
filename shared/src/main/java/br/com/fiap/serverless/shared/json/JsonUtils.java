@@ -12,7 +12,7 @@ public final class JsonUtils {
 
     private static final ObjectMapper MAPPER = new ObjectMapper()
             .registerModule(new JavaTimeModule())
-            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+            .configure(DeserializationFeature.ACCEPT_FLOAT_AS_INT, false);
 
     private JsonUtils() {
     }
