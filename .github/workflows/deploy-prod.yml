@@ -31,7 +31,6 @@ jobs:
   deploy:
     name: Build and deploy
     runs-on: ubuntu-latest
-    environment: production
 
     env:
       TF_STATE_BUCKET: ${{ vars.TF_STATE_BUCKET }}

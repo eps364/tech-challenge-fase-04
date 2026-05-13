@@ -14,8 +14,6 @@ Este projeto faz deploy automatico para `prod` quando houver push na branch `mai
 
 ## GitHub Secrets e Variables
 
-Crie um environment chamado `production` no GitHub. Para deploy automatico, nao configure aprovadores obrigatorios nesse environment.
-
 Em `Settings > Secrets and variables > Actions`, crie:
 
 Secrets:
