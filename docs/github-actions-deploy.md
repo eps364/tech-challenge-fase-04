@@ -20,13 +20,13 @@ Em `Settings > Secrets and variables > Actions`, crie:
 
 Secrets:
 
-- `AWS_ROLE_TO_ASSUME`: `arn:aws:iam::510997984143:role/tech-challenge-fase-04-github-deploy`
 - `SES_FROM_EMAIL`: e-mail verificado no SES para envio
 - `REPORT_RECIPIENT_EMAIL`: e-mail que recebe os relatorios
 - `ADMIN_ALERT_EMAIL`: e-mail que recebe alertas
 
 Variables:
 
+- `AWS_ROLE_TO_ASSUME`: `arn:aws:iam::510997984143:role/tech-challenge-fase-04-github-deploy`
 - `TF_STATE_BUCKET`: `tech-challenge-fase-04-prod-tfstate-510997984143`
 
 ## Protecao de acesso
