@@ -25,6 +25,7 @@ env:
   TF_VAR_email_queue_name: email-queue
   TF_VAR_email_dlq_name: email-queue-dlq
   TF_VAR_report_schedule_expression: "cron(0 12 ? * MON *)"
+  AWS_ROLE_TO_ASSUME: arn:aws:iam::510997984143:role/tech-challenge-fase-04-github-deploy
 
 jobs:
   deploy:
@@ -33,7 +34,6 @@ jobs:
     environment: production
 
     env:
-      AWS_ROLE_TO_ASSUME: ${{ vars.AWS_ROLE_TO_ASSUME || secrets.AWS_ROLE_TO_ASSUME }}
       TF_STATE_BUCKET: ${{ vars.TF_STATE_BUCKET }}
       TF_VAR_ses_from_email: ${{ secrets.SES_FROM_EMAIL }}
       TF_VAR_report_recipient_email: ${{ secrets.REPORT_RECIPIENT_EMAIL }}
@@ -46,7 +46,6 @@ jobs:
       - name: Check required configuration
         run: |
           required_vars=(
-            AWS_ROLE_TO_ASSUME
             TF_STATE_BUCKET
             TF_VAR_ses_from_email
             TF_VAR_report_recipient_email
