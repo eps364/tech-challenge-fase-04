@@ -12,6 +12,35 @@ Este projeto faz deploy automatico para `prod` quando houver push na branch `mai
 - Bucket sugerido para state: `tech-challenge-fase-04-prod-tfstate-510997984143`
 - IAM role sugerida: `tech-challenge-fase-04-github-deploy`
 
+## O que e manual e o que e Terraform
+
+Crie manualmente uma unica vez, antes do primeiro deploy:
+
+| Item | Nome | Motivo |
+| --- | --- | --- |
+| IAM OIDC provider | `token.actions.githubusercontent.com` | Permite que o GitHub Actions assuma role na AWS sem access key fixa. |
+| IAM role de deploy | `tech-challenge-fase-04-github-deploy` | Role assumida pelo workflow `deploy-prod.yml`. |
+| Inline policy da role de deploy | `tech-challenge-fase-04-prod-deploy` | Da permissao para ler/gravar o state S3 e criar/alterar os recursos do projeto. |
+| Bucket S3 do Terraform state | `tech-challenge-fase-04-prod-tfstate-510997984143` | Guarda o `terraform.tfstate`; precisa existir antes do `terraform init`. |
+| GitHub variable | `TF_STATE_BUCKET` | Informa ao workflow qual bucket usar no backend Terraform. |
+| GitHub secrets | `SES_FROM_EMAIL`, `REPORT_RECIPIENT_EMAIL`, `ADMIN_ALERT_EMAIL` | Valores sensiveis usados como variaveis do Terraform. |
+
+Nao crie manualmente as roles e policies abaixo. Elas sao criadas e mantidas pelo Terraform:
+
+| Item Terraform | Nome criado em `prod` | Arquivo |
+| --- | --- | --- |
+| Role da Lambda avaliador | `tech-challenge-fase-04-prod-avaliador-role` | `infra/terraform/iam.tf` |
+| Inline policy da Lambda avaliador | `tech-challenge-fase-04-prod-avaliador-policy` | `infra/terraform/iam.tf` |
+| Role da Lambda reports generator | `tech-challenge-fase-04-prod-reports-generator-role` | `infra/terraform/iam.tf` |
+| Inline policy da Lambda reports generator | `tech-challenge-fase-04-prod-reports-generator-policy` | `infra/terraform/iam.tf` |
+| Role da Lambda email sender | `tech-challenge-fase-04-prod-email-sender-role` | `infra/terraform/iam.tf` |
+| Inline policy da Lambda email sender | `tech-challenge-fase-04-prod-email-sender-policy` | `infra/terraform/iam.tf` |
+| Role do EventBridge Scheduler | `tech-challenge-fase-04-prod-scheduler-role` | `infra/terraform/eventbridge.tf` |
+| Inline policy do Scheduler | `tech-challenge-fase-04-prod-scheduler-invoke-lambda` | `infra/terraform/eventbridge.tf` |
+| Permissao da Lambda para API Gateway | `AllowApiGatewayInvoke` | `infra/terraform/api-gateway.tf` |
+
+A role manual `tech-challenge-fase-04-github-deploy` e apenas a role do pipeline. Ela precisa de `iam:CreateRole`, `iam:PutRolePolicy` e `iam:PassRole` para que o Terraform consiga criar e passar as roles da aplicacao para Lambda e Scheduler.
+
 ## GitHub Secrets e Variables
 
 Em `Settings > Secrets and variables > Actions`, crie:
@@ -228,6 +257,7 @@ cat > /tmp/github-actions-deploy-policy.json <<EOF
         "sns:GetTopicAttributes",
         "sns:ListSubscriptions",
         "sns:ListSubscriptionsByTopic",
+        "sns:ListTagsForResource",
         "sns:SetTopicAttributes",
         "sns:Subscribe",
         "sns:TagResource",
