@@ -1,0 +1,638 @@
+{
+  "info": {
+    "_postman_id": "tech-challenge-fase-04-serverless",
+    "name": "Tech Challenge Fase 04",
+    "description": "Colecao de testes para a solucao serverless do Tech Challenge Fase 04. Inclui chamadas HTTP via API Gateway, invocacoes locais de Lambdas no LocalStack e consultas de apoio em DynamoDB/SQS.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "API Gateway - Avaliacoes",
+      "description": "Chamadas HTTP expostas pelo API Gateway. Preencha base_url com o output Terraform api_gateway_url apos o deploy em AWS.",
+      "item": [
+        {
+          "name": "Avaliacao - Registrar critica",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"descricao\": \"A aula travou varias vezes e nao consegui acompanhar o conteudo.\",\n  \"nota\": 3\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/avaliacao",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "avaliacao"
+              ]
+            },
+            "description": "Registra feedback critico. A nota menor que 5 deve persistir a avaliacao e publicar mensagem de alerta na fila de e-mail."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 201', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('Retorna id da avaliacao', function () {",
+                  "  const body = pm.response.json();",
+                  "  pm.expect(body).to.have.property('id');",
+                  "  pm.collectionVariables.set('avaliacao_id', body.id);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Avaliacao - Registrar alta",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"descricao\": \"O conteudo foi bom, mas tive dificuldade com a dinamica da aula.\",\n  \"nota\": 6\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/avaliacao",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "avaliacao"
+              ]
+            },
+            "description": "Registra feedback com urgencia ALTA. Nao deve gerar alerta critico."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 201', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Avaliacao - Registrar baixa",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"descricao\": \"A aula foi clara, objetiva e com bons exemplos praticos.\",\n  \"nota\": 10\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/avaliacao",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "avaliacao"
+              ]
+            },
+            "description": "Registra feedback com urgencia BAIXA."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 201', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Avaliacao - Rota de compatibilidade",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"descricao\": \"Exemplo usando a rota legada plural.\",\n  \"nota\": 8\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/avaliacoes",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "avaliacoes"
+              ]
+            },
+            "description": "Valida a rota legada POST /avaliacoes, mantida como compatibilidade para o mesmo handler da Lambda Avaliador."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 201', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Avaliacao - Erro descricao obrigatoria",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"descricao\": \"\",\n  \"nota\": 7\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/avaliacao",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "avaliacao"
+              ]
+            },
+            "description": "Valida regra de entrada: descricao e obrigatoria."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 400', function () {",
+                  "  pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test('Mensagem de validacao', function () {",
+                  "  pm.expect(pm.response.text()).to.include('descricao is required');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Avaliacao - Erro nota fora da faixa",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"descricao\": \"Nota invalida para validar contrato.\",\n  \"nota\": 11\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/avaliacao",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "avaliacao"
+              ]
+            },
+            "description": "Valida regra de entrada: nota deve estar entre 0 e 10."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 400', function () {",
+                  "  pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test('Mensagem de validacao', function () {",
+                  "  pm.expect(pm.response.text()).to.include('nota must be between 0 and 10');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "LocalStack - Lambdas",
+      "description": "Invocacoes diretas das Lambdas pelo endpoint local do LocalStack. Use apos executar docker compose up -d e bash ./scripts/create-local-resources.sh.",
+      "item": [
+        {
+          "name": "Lambda Avaliador - Invocar localmente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"body\": \"{\\\"descricao\\\":\\\"Aula com instabilidade recorrente no ambiente on-line.\\\",\\\"nota\\\":3}\"\n}"
+            },
+            "url": {
+              "raw": "{{localstack_url}}/2015-03-31/functions/{{avaliador_lambda_name}}/invocations",
+              "host": [
+                "{{localstack_url}}"
+              ],
+              "path": [
+                "2015-03-31",
+                "functions",
+                "{{avaliador_lambda_name}}",
+                "invocations"
+              ]
+            },
+            "description": "Invoca a Lambda Avaliador simulando o evento do API Gateway. A resposta contem statusCode e body serializado."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Invocacao LocalStack retornou 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Lambda retornou 201', function () {",
+                  "  const lambdaResponse = pm.response.json();",
+                  "  pm.expect(lambdaResponse.statusCode).to.eql(201);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Lambda ReportsGenerator - Invocar localmente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{localstack_url}}/2015-03-31/functions/{{reports_lambda_name}}/invocations",
+              "host": [
+                "{{localstack_url}}"
+              ],
+              "path": [
+                "2015-03-31",
+                "functions",
+                "{{reports_lambda_name}}",
+                "invocations"
+              ]
+            },
+            "description": "Gera o relatorio semanal com base nos feedbacks dos ultimos 7 dias e publica a mensagem RELATORIO_GERADO na fila."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Invocacao LocalStack retornou 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Resumo contem totalAvaliacoes', function () {",
+                  "  const body = pm.response.json();",
+                  "  pm.expect(body).to.have.property('totalAvaliacoes');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Lambda EmailSender - Mensagem critica",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"Records\": [\n    {\n      \"messageId\": \"postman-avaliacao-critica\",\n      \"body\": \"{\\\"type\\\":\\\"AVALIACAO_CRITICA\\\",\\\"to\\\":\\\"admin@example.com\\\",\\\"subject\\\":\\\"Alerta de feedback critico\\\",\\\"template\\\":\\\"avaliacao-critica\\\",\\\"payload\\\":{\\\"descricao\\\":\\\"A aula travou varias vezes e nao consegui acompanhar o conteudo.\\\",\\\"urgencia\\\":\\\"CRITICA\\\",\\\"dataEnvio\\\":\\\"2026-04-28T10:00:00Z\\\",\\\"nota\\\":3}}\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{localstack_url}}/2015-03-31/functions/{{email_sender_lambda_name}}/invocations",
+              "host": [
+                "{{localstack_url}}"
+              ],
+              "path": [
+                "2015-03-31",
+                "functions",
+                "{{email_sender_lambda_name}}",
+                "invocations"
+              ]
+            },
+            "description": "Invoca a Lambda EmailSender com evento SQS contendo um alerta critico. Em LocalStack o envio e simulado pelo FakeEmailService."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Invocacao LocalStack retornou 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Sem falhas de batch', function () {",
+                  "  const body = pm.response.json();",
+                  "  pm.expect(body.batchItemFailures || []).to.have.length(0);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Lambda EmailSender - Relatorio semanal",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"Records\": [\n    {\n      \"messageId\": \"postman-relatorio-semanal\",\n      \"body\": \"{\\\"type\\\":\\\"RELATORIO_GERADO\\\",\\\"to\\\":\\\"admin@example.com\\\",\\\"subject\\\":\\\"Relatorio semanal de avaliacoes\\\",\\\"template\\\":\\\"relatorio-avaliacoes\\\",\\\"payload\\\":{\\\"totalAvaliacoes\\\":10,\\\"mediaNotas\\\":7.8,\\\"quantidadeAvaliacoesPorDia\\\":{\\\"2026-04-27\\\":4,\\\"2026-04-28\\\":6},\\\"quantidadeAvaliacoesPorUrgencia\\\":{\\\"BAIXA\\\":5,\\\"MEDIA\\\":3,\\\"ALTA\\\":1,\\\"CRITICA\\\":1},\\\"feedbacks\\\":[{\\\"descricao\\\":\\\"A aula travou varias vezes e nao consegui acompanhar o conteudo.\\\",\\\"urgencia\\\":\\\"CRITICA\\\",\\\"dataEnvio\\\":\\\"2026-04-28T10:00:00Z\\\"}],\\\"dataGeracao\\\":\\\"2026-04-28T10:00:00Z\\\"}}\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{localstack_url}}/2015-03-31/functions/{{email_sender_lambda_name}}/invocations",
+              "host": [
+                "{{localstack_url}}"
+              ],
+              "path": [
+                "2015-03-31",
+                "functions",
+                "{{email_sender_lambda_name}}",
+                "invocations"
+              ]
+            },
+            "description": "Invoca a Lambda EmailSender com evento SQS contendo o relatorio semanal."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Invocacao LocalStack retornou 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Sem falhas de batch', function () {",
+                  "  const body = pm.response.json();",
+                  "  pm.expect(body.batchItemFailures || []).to.have.length(0);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "LocalStack - Dados e filas",
+      "description": "Chamadas auxiliares para inspecionar persistencia e mensageria localmente.",
+      "item": [
+        {
+          "name": "DynamoDB - Scan avaliacoes",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-amz-json-1.0"
+              },
+              {
+                "key": "X-Amz-Target",
+                "value": "DynamoDB_20120810.Scan"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"TableName\": \"{{dynamodb_table_name}}\"\n}"
+            },
+            "url": {
+              "raw": "{{localstack_url}}/",
+              "host": [
+                "{{localstack_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            },
+            "description": "Lista itens persistidos na tabela DynamoDB local."
+          }
+        },
+        {
+          "name": "SQS - Receber mensagens da fila de e-mail",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "Action",
+                  "value": "ReceiveMessage",
+                  "type": "text"
+                },
+                {
+                  "key": "QueueUrl",
+                  "value": "{{email_queue_url}}",
+                  "type": "text"
+                },
+                {
+                  "key": "MaxNumberOfMessages",
+                  "value": "10",
+                  "type": "text"
+                },
+                {
+                  "key": "WaitTimeSeconds",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "Version",
+                  "value": "2012-11-05",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{localstack_url}}/",
+              "host": [
+                "{{localstack_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            },
+            "description": "Recebe mensagens pendentes na fila de e-mail local. Se a Lambda EmailSender estiver vinculada por event source mapping, a fila pode estar vazia apos o processamento."
+          }
+        },
+        {
+          "name": "SQS - Consultar atributos da DLQ",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "Action",
+                  "value": "GetQueueAttributes",
+                  "type": "text"
+                },
+                {
+                  "key": "QueueUrl",
+                  "value": "{{email_dlq_url}}",
+                  "type": "text"
+                },
+                {
+                  "key": "AttributeName.1",
+                  "value": "ApproximateNumberOfMessages",
+                  "type": "text"
+                },
+                {
+                  "key": "Version",
+                  "value": "2012-11-05",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{localstack_url}}/",
+              "host": [
+                "{{localstack_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            },
+            "description": "Consulta quantidade aproximada de mensagens na DLQ local."
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://REPLACE.execute-api.us-east-1.amazonaws.com",
+      "type": "string"
+    },
+    {
+      "key": "localstack_url",
+      "value": "http://localhost.localstack.cloud:4566",
+      "type": "string"
+    },
+    {
+      "key": "aws_region",
+      "value": "us-east-1",
+      "type": "string"
+    },
+    {
+      "key": "dynamodb_table_name",
+      "value": "avaliacoes",
+      "type": "string"
+    },
+    {
+      "key": "email_queue_url",
+      "value": "http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/email-queue",
+      "type": "string"
+    },
+    {
+      "key": "email_dlq_url",
+      "value": "http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/email-queue-dlq",
+      "type": "string"
+    },
+    {
+      "key": "avaliador_lambda_name",
+      "value": "avaliador",
+      "type": "string"
+    },
+    {
+      "key": "reports_lambda_name",
+      "value": "reports-generator",
+      "type": "string"
+    },
+    {
+      "key": "email_sender_lambda_name",
+      "value": "email-sender",
+      "type": "string"
+    },
+    {
+      "key": "avaliacao_id",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}
