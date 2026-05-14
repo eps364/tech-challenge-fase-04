@@ -1,13 +1,13 @@
 package br.com.fiap.serverless.reports.handler;
 
 import java.time.Clock;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.amazonaws.services.lambda.runtime.events.ScheduledEvent;
 
 import br.com.fiap.serverless.reports.service.ReportsGeneratorService;
 import br.com.fiap.serverless.shared.config.AwsClientFactory;
@@ -18,7 +18,7 @@ import br.com.fiap.serverless.shared.repository.DynamoDbAvaliacaoRepository;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.sqs.SqsClient;
 
-public class ReportsGeneratorHandler implements RequestHandler<ScheduledEvent, ReportSummary> {
+public class ReportsGeneratorHandler implements RequestHandler<Map<String, Object>, ReportSummary> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ReportsGeneratorHandler.class);
 
@@ -42,7 +42,7 @@ public class ReportsGeneratorHandler implements RequestHandler<ScheduledEvent, R
     }
 
     @Override
-    public ReportSummary handleRequest(ScheduledEvent input, Context context) {
+    public ReportSummary handleRequest(Map<String, Object> input, Context context) {
         LOGGER.info("Generating report requestId={}", context != null ? context.getAwsRequestId() : "local");
         return reportsGeneratorService.generate();
     }
