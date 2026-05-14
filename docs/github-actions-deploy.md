@@ -127,6 +127,8 @@ fi
 
 Crie a policy de deploy:
 
+Se voce for configurar pelo Console da AWS em vez do CloudShell, use o JSON ja preenchido em `docs/aws-console-oidc-setup.md`. Os placeholders `${STATE_BUCKET}` e `${AWS_ACCOUNT_ID}` abaixo dependem da substituicao feita pelo shell.
+
 ```bash
 cat > /tmp/github-actions-deploy-policy.json <<EOF
 {
@@ -148,6 +150,7 @@ cat > /tmp/github-actions-deploy-policy.json <<EOF
       "Action": [
         "s3:DeleteObject",
         "s3:GetObject",
+        "s3:GetObjectVersion",
         "s3:PutObject"
       ],
       "Resource": "arn:aws:s3:::${STATE_BUCKET}/tech-challenge-fase-04/prod/*"
@@ -225,6 +228,7 @@ cat > /tmp/github-actions-deploy-policy.json <<EOF
         "sns:GetTopicAttributes",
         "sns:ListSubscriptions",
         "sns:ListSubscriptionsByTopic",
+        "sns:SetTopicAttributes",
         "sns:Subscribe",
         "sns:TagResource",
         "sns:Unsubscribe",

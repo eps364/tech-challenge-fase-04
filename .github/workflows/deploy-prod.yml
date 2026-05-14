@@ -77,6 +77,28 @@ jobs:
           role-to-assume: ${{ env.AWS_ROLE_TO_ASSUME }}
           aws-region: ${{ env.AWS_REGION }}
 
+      - name: Check AWS identity and Terraform state access
+        run: |
+          aws sts get-caller-identity
+          aws s3api head-bucket --bucket "${TF_STATE_BUCKET}"
+
+          state_key="tech-challenge-fase-04/prod/terraform.tfstate"
+          set +e
+          head_output="$(aws s3api head-object --bucket "${TF_STATE_BUCKET}" --key "${state_key}" 2>&1)"
+          head_status=$?
+          set -e
+
+          if [ "${head_status}" -eq 0 ]; then
+            echo "Terraform state object is accessible: s3://${TF_STATE_BUCKET}/${state_key}"
+          elif echo "${head_output}" | grep -Eq "(404|Not Found|NoSuchKey)"; then
+            echo "Terraform state object does not exist yet; Terraform will create it."
+          else
+            echo "::error::Cannot read Terraform state object s3://${TF_STATE_BUCKET}/${state_key}."
+            echo "::error::Check the inline policy on ${AWS_ROLE_TO_ASSUME}; it must allow s3:GetObject on this exact object prefix."
+            echo "${head_output}"
+            exit "${head_status}"
+          fi
+
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v3
         with:
