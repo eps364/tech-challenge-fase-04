@@ -2,6 +2,35 @@
 
 Use este guia se voce nao conseguir usar o AWS CloudShell.
 
+## O que voce cria manualmente
+
+Crie manualmente apenas o bootstrap necessario para o GitHub Actions executar o Terraform:
+
+| Item | Nome | Onde criar |
+| --- | --- | --- |
+| IAM OIDC provider | `token.actions.githubusercontent.com` | AWS Console, IAM |
+| IAM role de deploy | `tech-challenge-fase-04-github-deploy` | AWS Console, IAM |
+| Inline policy da role de deploy | `tech-challenge-fase-04-prod-deploy` | Dentro da role `tech-challenge-fase-04-github-deploy` |
+| Bucket S3 do Terraform state | `tech-challenge-fase-04-prod-tfstate-510997984143` | AWS Console, S3 |
+| GitHub variable | `TF_STATE_BUCKET` | GitHub Actions variables |
+| GitHub secrets | `SES_FROM_EMAIL`, `REPORT_RECIPIENT_EMAIL`, `ADMIN_ALERT_EMAIL` | GitHub Actions secrets |
+
+Nao crie manualmente as roles da aplicacao. O Terraform cria e atualiza estas roles e policies:
+
+| Item Terraform | Nome criado em `prod` | Arquivo |
+| --- | --- | --- |
+| Role da Lambda avaliador | `tech-challenge-fase-04-prod-avaliador-role` | `infra/terraform/iam.tf` |
+| Inline policy da Lambda avaliador | `tech-challenge-fase-04-prod-avaliador-policy` | `infra/terraform/iam.tf` |
+| Role da Lambda reports generator | `tech-challenge-fase-04-prod-reports-generator-role` | `infra/terraform/iam.tf` |
+| Inline policy da Lambda reports generator | `tech-challenge-fase-04-prod-reports-generator-policy` | `infra/terraform/iam.tf` |
+| Role da Lambda email sender | `tech-challenge-fase-04-prod-email-sender-role` | `infra/terraform/iam.tf` |
+| Inline policy da Lambda email sender | `tech-challenge-fase-04-prod-email-sender-policy` | `infra/terraform/iam.tf` |
+| Role do EventBridge Scheduler | `tech-challenge-fase-04-prod-scheduler-role` | `infra/terraform/eventbridge.tf` |
+| Inline policy do Scheduler | `tech-challenge-fase-04-prod-scheduler-invoke-lambda` | `infra/terraform/eventbridge.tf` |
+| Permissao da Lambda para API Gateway | `AllowApiGatewayInvoke` | `infra/terraform/api-gateway.tf` |
+
+A role manual `tech-challenge-fase-04-github-deploy` e a unica role que o workflow assume. As demais sao criadas pelo Terraform durante o deploy.
+
 ## 1. Criar o Identity Provider do GitHub
 
 1. Acesse o Console da AWS na conta `510997984143`.
@@ -199,6 +228,7 @@ tech-challenge-fase-04-prod-deploy
         "sns:GetTopicAttributes",
         "sns:ListSubscriptions",
         "sns:ListSubscriptionsByTopic",
+        "sns:ListTagsForResource",
         "sns:SetTopicAttributes",
         "sns:Subscribe",
         "sns:TagResource",
