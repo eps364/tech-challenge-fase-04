@@ -6,6 +6,13 @@ Projeto acadêmico em Java 17 para AWS Serverless com três Lambdas, API Gateway
 
 O sistema registra feedbacks de alunos, classifica a urgencia pela nota, persiste os dados no DynamoDB, envia alertas criticos por e-mail via SQS/SES e gera relatorios semanais para administradores.
 
+## Artefatos de entrega
+
+- Documentacao principal: [docs/document.md](./docs/document.md)
+- Collection Postman: [docs/TechChallenge-Fase04.postman_collection.json](./docs/TechChallenge-Fase04.postman_collection.json)
+- Diagramas: [docs/diagrams](./docs/diagrams)
+- Exemplos de payload: [docs/API](./docs/API)
+
 ## Arquitetura
 
 ```text

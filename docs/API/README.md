@@ -1,5 +1,15 @@
 # API Local
 
+## Collection Postman
+
+A collection principal de entrega esta em:
+
+```text
+docs/TechChallenge-Fase04.postman_collection.json
+```
+
+Use `base_url` com o output Terraform `api_gateway_url` para testar a API em AWS. Para execucao local com LocalStack, a collection tambem possui requests de invocacao direta das Lambdas e consultas auxiliares em DynamoDB/SQS.
+
 ## POST /avaliacao
 
 Endpoint principal do Tech Challenge para registrar feedbacks.
