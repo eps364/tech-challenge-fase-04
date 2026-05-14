@@ -26,4 +26,3 @@ Toda sugestão de código deve preservar a rastreabilidade do status do pedido e
 
 ---
 **Nota**: Em caso de conflito, as instruções específicas nos arquivos de contexto em `.agent/context/` têm prioridade sobre resumos gerais. Consulte também `.github/copilot-instructions.md` para diretrizes adicionais.
-
