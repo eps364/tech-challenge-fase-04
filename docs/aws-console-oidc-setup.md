@@ -92,12 +92,172 @@ Abra a role `tech-challenge-fase-04-github-deploy`.
 2. Clique em `Add permissions`.
 3. Escolha `Create inline policy`.
 4. Escolha a aba `JSON`.
-5. Cole a policy que esta no arquivo `docs/github-actions-deploy.md`, na secao `Crie a policy de deploy`.
+5. Cole a policy abaixo.
 6. Nome da inline policy:
 
 ```text
 tech-challenge-fase-04-prod-deploy
 ```
+
+> Importante: nao cole no Console a policy do guia CloudShell mantendo placeholders como `${STATE_BUCKET}` ou `${AWS_ACCOUNT_ID}`. No CloudShell esses valores sao substituidos pelo shell; no Console eles ficam literais e a role nao ganha acesso ao bucket real, causando erro `403 Forbidden` no `terraform init`.
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "TerraformStateBucket",
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetBucketLocation",
+        "s3:GetBucketVersioning",
+        "s3:ListBucket"
+      ],
+      "Resource": "arn:aws:s3:::tech-challenge-fase-04-prod-tfstate-510997984143"
+    },
+    {
+      "Sid": "TerraformStateObjects",
+      "Effect": "Allow",
+      "Action": [
+        "s3:DeleteObject",
+        "s3:GetObject",
+        "s3:GetObjectVersion",
+        "s3:PutObject"
+      ],
+      "Resource": "arn:aws:s3:::tech-challenge-fase-04-prod-tfstate-510997984143/tech-challenge-fase-04/prod/*"
+    },
+    {
+      "Sid": "ReadCallerIdentity",
+      "Effect": "Allow",
+      "Action": "sts:GetCallerIdentity",
+      "Resource": "*"
+    },
+    {
+      "Sid": "ManageProjectResources",
+      "Effect": "Allow",
+      "Action": [
+        "apigateway:*",
+        "cloudwatch:DeleteAlarms",
+        "cloudwatch:DeleteDashboards",
+        "cloudwatch:DescribeAlarms",
+        "cloudwatch:GetDashboard",
+        "cloudwatch:ListDashboards",
+        "cloudwatch:ListTagsForResource",
+        "cloudwatch:PutDashboard",
+        "cloudwatch:PutMetricAlarm",
+        "cloudwatch:TagResource",
+        "cloudwatch:UntagResource",
+        "dynamodb:CreateTable",
+        "dynamodb:DeleteTable",
+        "dynamodb:DescribeContinuousBackups",
+        "dynamodb:DescribeTable",
+        "dynamodb:DescribeTimeToLive",
+        "dynamodb:ListTables",
+        "dynamodb:ListTagsOfResource",
+        "dynamodb:TagResource",
+        "dynamodb:UntagResource",
+        "dynamodb:UpdateTable",
+        "dynamodb:UpdateTimeToLive",
+        "lambda:AddPermission",
+        "lambda:CreateEventSourceMapping",
+        "lambda:CreateFunction",
+        "lambda:DeleteEventSourceMapping",
+        "lambda:DeleteFunction",
+        "lambda:GetEventSourceMapping",
+        "lambda:GetFunction",
+        "lambda:GetFunctionCodeSigningConfig",
+        "lambda:GetPolicy",
+        "lambda:ListEventSourceMappings",
+        "lambda:ListTags",
+        "lambda:ListVersionsByFunction",
+        "lambda:RemovePermission",
+        "lambda:TagResource",
+        "lambda:UntagResource",
+        "lambda:UpdateEventSourceMapping",
+        "lambda:UpdateFunctionCode",
+        "lambda:UpdateFunctionConfiguration",
+        "logs:*",
+        "scheduler:CreateSchedule",
+        "scheduler:DeleteSchedule",
+        "scheduler:GetSchedule",
+        "scheduler:ListSchedules",
+        "scheduler:ListTagsForResource",
+        "scheduler:TagResource",
+        "scheduler:UntagResource",
+        "scheduler:UpdateSchedule",
+        "ses:DeleteIdentity",
+        "ses:GetIdentityDkimAttributes",
+        "ses:GetIdentityVerificationAttributes",
+        "ses:ListIdentities",
+        "ses:ListTagsForResource",
+        "ses:TagResource",
+        "ses:UntagResource",
+        "ses:VerifyEmailIdentity",
+        "sns:CreateTopic",
+        "sns:DeleteTopic",
+        "sns:GetSubscriptionAttributes",
+        "sns:GetTopicAttributes",
+        "sns:ListSubscriptions",
+        "sns:ListSubscriptionsByTopic",
+        "sns:SetTopicAttributes",
+        "sns:Subscribe",
+        "sns:TagResource",
+        "sns:Unsubscribe",
+        "sns:UntagResource",
+        "sqs:CreateQueue",
+        "sqs:DeleteQueue",
+        "sqs:GetQueueAttributes",
+        "sqs:GetQueueUrl",
+        "sqs:ListQueues",
+        "sqs:ListQueueTags",
+        "sqs:SetQueueAttributes",
+        "sqs:TagQueue",
+        "sqs:UntagQueue"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "ManageProjectIamRoles",
+      "Effect": "Allow",
+      "Action": [
+        "iam:CreateRole",
+        "iam:DeleteRole",
+        "iam:DeleteRolePolicy",
+        "iam:GetRole",
+        "iam:GetRolePolicy",
+        "iam:ListAttachedRolePolicies",
+        "iam:ListInstanceProfilesForRole",
+        "iam:ListRolePolicies",
+        "iam:PutRolePolicy",
+        "iam:TagRole",
+        "iam:UntagRole",
+        "iam:UpdateAssumeRolePolicy"
+      ],
+      "Resource": "arn:aws:iam::510997984143:role/tech-challenge-fase-04-prod-*"
+    },
+    {
+      "Sid": "PassProjectIamRoles",
+      "Effect": "Allow",
+      "Action": "iam:PassRole",
+      "Resource": "arn:aws:iam::510997984143:role/tech-challenge-fase-04-prod-*",
+      "Condition": {
+        "StringEquals": {
+          "iam:PassedToService": [
+            "lambda.amazonaws.com",
+            "scheduler.amazonaws.com"
+          ]
+        }
+      }
+    }
+  ]
+}
+```
+
+Se o workflow falhar com `Cannot read Terraform state object`, confira primeiro estes pontos:
+
+- A role assumida no log precisa ser `arn:aws:iam::510997984143:role/tech-challenge-fase-04-github-deploy`.
+- A inline policy precisa apontar para `arn:aws:s3:::tech-challenge-fase-04-prod-tfstate-510997984143` e para `arn:aws:s3:::tech-challenge-fase-04-prod-tfstate-510997984143/tech-challenge-fase-04/prod/*`.
+- Se o bucket usa SSE-KMS em vez de SSE-S3, a role tambem precisa de permissoes na chave KMS usada pelo bucket.
 
 ## 5. Criar o bucket do Terraform state pelo Console
 

@@ -28,7 +28,6 @@ resource "aws_lambda_function" "avaliador" {
 
   environment {
     variables = {
-      AWS_REGION          = var.aws_region
       ADMIN_ALERT_EMAIL   = var.admin_alert_email
       DYNAMODB_TABLE_NAME = aws_dynamodb_table.avaliacoes.name
       EMAIL_QUEUE_URL     = aws_sqs_queue.email_queue.id
@@ -51,7 +50,6 @@ resource "aws_lambda_function" "reports_generator" {
 
   environment {
     variables = {
-      AWS_REGION             = var.aws_region
       DYNAMODB_TABLE_NAME    = aws_dynamodb_table.avaliacoes.name
       EMAIL_QUEUE_URL        = aws_sqs_queue.email_queue.id
       REPORT_RECIPIENT_EMAIL = var.report_recipient_email
@@ -74,7 +72,6 @@ resource "aws_lambda_function" "email_sender" {
 
   environment {
     variables = {
-      AWS_REGION     = var.aws_region
       SES_FROM_EMAIL = var.ses_from_email
     }
   }
