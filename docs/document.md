@@ -71,7 +71,7 @@ graph TD
     Student["Estudante"] -->|"POST /avaliacao"| ApiGateway["API Gateway HTTP API"]
     ApiGateway --> Avaliador["Lambda Avaliador"]
     Avaliador -->|"PutItem"| DynamoDB["DynamoDB avaliacoes"]
-    Avaliador -->|"avaliacao critica"| EmailQueue["SQS email-queue"]
+    Avaliador -->|"avaliacao critica (nota <= 4)"| EmailQueue["SQS email-queue"]
     Scheduler["EventBridge Scheduler semanal"] --> Reports["Lambda ReportsGenerator"]
     Reports -->|"Scan semanal"| DynamoDB
     Reports -->|"relatorio semanal"| EmailQueue
@@ -305,6 +305,8 @@ Outputs relevantes:
 - `reports_generator_lambda_name`
 - `email_sender_lambda_name`
 
+Observacao: no output consolidado `project_summary` (em `infra/terraform/main.tf`), o campo correspondente aparece como `reports_lambda_name`.
+
 ### Script de deploy
 
 ```bash
@@ -319,18 +321,32 @@ Pré-requisitos:
 - Maven 3.9+.
 - Docker.
 - Git Bash ou WSL no Windows para os scripts `.sh`.
-- `awscli`, `awscli-local` e `jq` para os atalhos locais.
 
 Passos:
 
 ```bash
 cp .env.example .env
-docker compose up -d
-bash ./scripts/create-local-resources.sh
-bash ./scripts/invoke-avaliador-local.sh
-bash ./scripts/invoke-reports-local.sh
-bash ./scripts/invoke-email-sender-local.sh
+./scripts/start-localstack.sh
+./scripts/create-local-resources.sh
+./scripts/validate-localstack.sh
+./scripts/invoke-avaliador-local.sh
+./scripts/invoke-reports-local.sh
+./scripts/invoke-email-sender-local.sh
 ```
+
+Diagnostico de acesso via browser (WSL/Windows):
+
+```bash
+bash ./scripts/diagnose-localstack-browser.sh
+```
+
+Interface grafica opcional para visualizar tabelas do DynamoDB:
+
+```bash
+docker compose up -d dynamodb-admin
+```
+
+Acesse: `http://localhost:8001`
 
 O arquivo `.env.example` define valores padrão para LocalStack, DynamoDB, SQS, SES e e-mails administrativos.
 
@@ -376,7 +392,7 @@ Variáveis principais:
 - `email_queue_url`: URL da fila local.
 - `email_dlq_url`: URL da DLQ local.
 - `avaliador_lambda_name`: padrão `avaliador` para LocalStack.
-- `reports_lambda_name`: padrão `reports-generator` para LocalStack.
+- `reports_lambda_name`: padrão `reports-generator` para LocalStack (equivale ao output Terraform `reports_generator_lambda_name`).
 - `email_sender_lambda_name`: padrão `email-sender` para LocalStack.
 
 ## 17. Práticas obedecidas

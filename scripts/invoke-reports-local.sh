@@ -4,9 +4,14 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
+# shellcheck source=/dev/null
+source "${SCRIPT_DIR}/localstack-cli.sh"
+
 cd "${PROJECT_ROOT}"
 
-awslocal lambda invoke \
+require_localstack_running
+
+localstack_cli lambda invoke \
   --function-name reports-generator \
   --payload '{}' \
   /tmp/reports-response.json
