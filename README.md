@@ -93,20 +93,25 @@ Pré-requisitos:
 - Docker
 - Terraform 1.6+
 
-No Windows, prefira os scripts PowerShell (`.ps1`). Eles usam o `awslocal` de dentro do container do LocalStack, então você não precisa instalar `awslocal` ou `jq` localmente.
+No Windows, execute os scripts shell (`.sh`) via Git Bash ou WSL. O repositório nao inclui atalhos PowerShell (`.ps1`) para esse fluxo local.
 
 Passos:
 
 ```bash
 cp .env.example .env
-docker compose up -d
+./scripts/start-localstack.sh
 ./scripts/create-local-resources.sh
+./scripts/validate-localstack.sh
 ./scripts/invoke-avaliador-local.sh
 ./scripts/invoke-reports-local.sh
 ./scripts/invoke-email-sender-local.sh
+
+# Opcional: interface grafica para DynamoDB
+docker compose up -d dynamodb-admin
+# Browser: http://localhost:8001
 ```
 
-No Windows, execute estes mesmos scripts pelo Git Bash ou WSL. O repositório não inclui versões `.ps1` desses atalhos locais.
+No Windows, execute estes mesmos scripts pelo Git Bash ou WSL.
 
 ```powershell
 Copy-Item .env.example .env
@@ -127,6 +132,8 @@ awslocal sqs list-queues
 awslocal lambda list-functions
 awslocal ses list-identities
 ```
+
+Sem `awslocal` instalado no host, os scripts locais fazem fallback automatico para `docker exec` dentro do container do LocalStack.
 
 ### Consultando o DynamoDB local
 

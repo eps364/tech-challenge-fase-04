@@ -4,14 +4,13 @@ graph TD
     Student["Estudante"] -->|"POST /avaliacao"| ApiGateway["API Gateway HTTP API"]
     ApiGateway --> Avaliador["Lambda Avaliador"]
     Avaliador -->|"PutItem"| DynamoDB["DynamoDB avaliacoes"]
-    Avaliador -->|"feedback critico ou confirmacao"| EmailQueue["SQS email-queue"]
+    Avaliador -->|"avaliacao critica (nota <= 4)"| EmailQueue["SQS email-queue"]
     Scheduler["EventBridge Scheduler semanal"] --> Reports["Lambda ReportsGenerator"]
     Reports -->|"Scan semanal"| DynamoDB
     Reports -->|"relatorio semanal"| EmailQueue
     EmailQueue --> EmailSender["Lambda EmailSender"]
     EmailSender --> SES["Amazon SES"]
     SES --> Admin["Administradores"]
-    SES --> Student
     EmailQueue -.-> DLQ["SQS DLQ"]
     CloudWatch["CloudWatch Logs, Alarms e Dashboard"] -.-> Avaliador
     CloudWatch -.-> Reports
