@@ -64,33 +64,15 @@ Componentes principais:
 
 ## 5. Arquitetura
 
-O desenho da arquitetura está em `docs/diagrams/architecture.mmd`.
-
-```mermaid
-graph TD
-    Student["Estudante"] -->|"POST /avaliacao"| ApiGateway["API Gateway HTTP API"]
-    ApiGateway --> Avaliador["Lambda Avaliador"]
-    Avaliador -->|"PutItem"| DynamoDB["DynamoDB avaliacoes"]
-    Avaliador -->|"avaliacao critica (nota <= 4)"| EmailQueue["SQS email-queue"]
-    Scheduler["EventBridge Scheduler semanal"] --> Reports["Lambda ReportsGenerator"]
-    Reports -->|"Scan semanal"| DynamoDB
-    Reports -->|"relatorio semanal"| EmailQueue
-    EmailQueue --> EmailSender["Lambda EmailSender"]
-    EmailSender --> SES["Amazon SES"]
-    SES --> Admin["Administradores"]
-    EmailQueue -.-> DLQ["SQS DLQ"]
-    CloudWatch["CloudWatch Logs, Alarms e Dashboard"] -.-> Avaliador
-    CloudWatch -.-> Reports
-    CloudWatch -.-> EmailSender
-    Alerts["SNS monitoring-alerts"] -.-> Admin
-    CloudWatch -.-> Alerts
-```
+![Arquitetura do Sistema](diagrams/architecture.svg)
 
 A arquitetura evita um serviço monolítico. A entrada HTTP, o cálculo de relatórios e o envio de e-mails ficam em funções independentes, conectadas por recursos gerenciados.
 
 ## 6. Fluxos principais
 
-O diagrama de sequência está em `docs/diagrams/flows.mmd`.
+![Fluxos Principais](diagrams/flows.svg)
+
+### 6.1 Registro de avaliação
 
 ### 6.1 Registro de avaliação
 

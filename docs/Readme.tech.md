@@ -55,61 +55,11 @@ A solução usa arquitetura serverless orientada a eventos, com API Gateway para
 
 ## 2.2. Diagrama de Arquitetura
 
-```mermaid
-graph TD
-    Student[Estudante] -->|POST /avaliacao| APIGW[API Gateway HTTP API]
-    APIGW --> Avaliador[Lambda Avaliador]
-    Avaliador -->|PutItem| DB[DynamoDB avaliações]
-    Avaliador -->|Avaliação crítica| Q[SQS email-queue]
-
-    Scheduler[EventBridge Scheduler semanal] --> Reports[Lambda ReportsGenerator]
-    Reports -->|Scan últimos 7 dias| DB
-    Reports -->|Relatório semanal| Q
-
-    Q --> Email[Lambda EmailSender]
-    Email --> SES[Amazon SES]
-    SES --> Admin[Administradores]
-
-    Q -. falhas .-> DLQ[SQS email-queue-dlq]
-    CW[CloudWatch logs e alarmes] -. monitora .-> Avaliador
-    CW -. monitora .-> Reports
-    CW -. monitora .-> Email
-    CW --> SNS[SNS monitoring-alerts]
-    SNS --> Admin
-```
+![Arquitetura do Sistema](diagrams/architecture.svg)
 
 ## 2.3. Diagramas dos principais fluxos
 
-```mermaid
-sequenceDiagram
-    participant Student as Estudante
-    participant API as API Gateway
-    participant Avaliador as Lambda Avaliador
-    participant DB as DynamoDB
-    participant Queue as SQS EmailQueue
-    participant Email as Lambda EmailSender
-    participant Reports as Lambda ReportsGenerator
-    participant Scheduler as EventBridge Scheduler
-    participant Admin as Administradores
-
-    Student->>API: POST /avaliacao {descrição, nota}
-    API->>Avaliador: Invoke
-    Avaliador->>Avaliador: Valida e classifica urgência
-    Avaliador->>DB: Salva feedback
-    alt urgência CRÍTICA
-      Avaliador->>Queue: Publica alerta
-      Queue->>Email: Entrega mensagem
-      Email-->>Admin: Envia e-mail crítico
-    end
-    Avaliador-->>Student: 201 Created
-
-    Scheduler->>Reports: Execução semanal
-    Reports->>DB: Busca feedbacks (7 dias)
-    Reports->>Reports: Consolida indicadores
-    Reports->>Queue: Publica relatório
-    Queue->>Email: Entrega mensagem
-    Email-->>Admin: Envia relatório semanal
-```
+![Fluxos Principais](diagrams/flows.svg)
 
 # 3. Endpoints Principais
 
@@ -145,17 +95,24 @@ sequenceDiagram
 
 ## 3.2 Chamadas internas e assíncronas
 
-| Origem | Destino | Tipo | Descrição |
-|---|---|---|---|
-| API Gateway | Lambda Avaliador | Síncrona | Entrada HTTP para registro de avaliação |
-| Lambda Avaliador | DynamoDB | Síncrona | Persistência do feedback |
-| Lambda Avaliador | SQS email-queue | Assíncrona | Publica mensagem `AVALIACAO_CRITICA` quando nota <= 4 |
-| EventBridge Scheduler | Lambda ReportsGenerator | Assíncrona (agendada) | Disparo semanal `cron(0 12 ? * MON *)` |
-| Lambda ReportsGenerator | DynamoDB | Síncrona | Consulta feedbacks dos últimos 7 dias |
-| Lambda ReportsGenerator | SQS email-queue | Assíncrona | Publica mensagem `RELATORIO_GERADO` |
-| SQS email-queue | Lambda EmailSender | Assíncrona | Consumo de mensagens de alerta e relatório |
-| Lambda EmailSender | SES | Síncrona | Envio de e-mail para administradores |
-| CloudWatch Alarms | SNS monitoring-alerts | Assíncrona | Notificação de falhas operacionais |
+### Chamadas síncronas
+
+| Fluxo | Objetivo |
+| --- | --- |
+| API Gateway -> Lambda Avaliador | Entrada HTTP de avaliação |
+| Lambda Avaliador -> DynamoDB | Persistência do feedback |
+| Lambda ReportsGenerator -> DynamoDB | Consulta dos últimos 7 dias |
+| Lambda EmailSender -> SES | Envio de e-mail |
+
+### Chamadas assíncronas
+
+| Fluxo | Gatilho |
+| --- | --- |
+| Lambda Avaliador -> SQS email-queue | `AVALIACAO_CRITICA` quando nota <= 4 |
+| EventBridge Scheduler -> Lambda ReportsGenerator | `cron(0 12 ? * MON *)` |
+| Lambda ReportsGenerator -> SQS email-queue | `RELATORIO_GERADO` |
+| SQS email-queue -> Lambda EmailSender | Consumo de alertas e relatórios |
+| CloudWatch Alarms -> SNS monitoring-alerts | Alertas operacionais |
 
 # 4. Eventos, Regras e Resiliência
 
@@ -223,21 +180,28 @@ Exemplos oficiais de payload:
 
 Variáveis principais utilizadas nos ambientes:
 
-| Variável | Obrigatória | Default | Finalidade |
-| --- | --- | --- | --- |
-| `project_name` | Não | `tech-challenge-fase-04` | Prefixo dos recursos |
-| `environment` | Sim | - | Ambiente (`dev` ou `prod`) |
-| `aws_region` | Sim | - | Região AWS |
-| `dynamodb_table_name` | Não | `avaliacoes` | Nome da tabela |
-| `email_queue_name` | Não | `email-queue` | Nome da fila principal |
-| `email_dlq_name` | Não | `email-queue-dlq` | Nome da DLQ |
-| `ses_from_email` | Sim | - | Remetente verificado no SES |
-| `report_recipient_email` | Sim | - | Destinatário dos relatórios |
-| `admin_alert_email` | Sim | - | Destinatário de alertas críticos |
-| `report_schedule_expression` | Não | `cron(0 12 ? * MON *)` | Agendamento do relatório semanal |
-| `lambda_runtime` | Não | `java17` | Runtime das Lambdas |
-| `lambda_memory_size` | Não | `512` | Memória das Lambdas (MB) |
-| `lambda_timeout` | Não | `30` | Timeout das Lambdas (segundos) |
+### Obrigatórias
+
+| Variável | Finalidade |
+| --- | --- |
+| `environment` | Ambiente (`dev` ou `prod`) |
+| `aws_region` | Região AWS |
+| `ses_from_email` | Remetente verificado no SES |
+| `report_recipient_email` | Destinatário dos relatórios |
+| `admin_alert_email` | Destinatário de alertas críticos |
+
+### Opcionais (com default)
+
+| Variável | Default | Finalidade |
+| --- | --- | --- |
+| `project_name` | `tech-challenge-fase-04` | Prefixo dos recursos |
+| `dynamodb_table_name` | `avaliacoes` | Nome da tabela |
+| `email_queue_name` | `email-queue` | Nome da fila principal |
+| `email_dlq_name` | `email-queue-dlq` | Nome da DLQ |
+| `report_schedule_expression` | `cron(0 12 ? * MON *)` | Agendamento do relatório semanal |
+| `lambda_runtime` | `java17` | Runtime das Lambdas |
+| `lambda_memory_size` | `512` | Memória das Lambdas (MB) |
+| `lambda_timeout` | `30` | Timeout das Lambdas (segundos) |
 
 ## 5.4 Outputs relevantes do Terraform
 
@@ -462,52 +426,7 @@ O GitFlow Guard valida que apenas dois fluxos de PR são permitidos:
 
 ## 9.3 Diagrama do pipeline
 
-```mermaid
-flowchart LR
-    Dev(["👤 Desenvolvedor"])
-
-    Dev -->|"push / PR\n(qualquer branch)"| CI
-    Dev -->|"abre PR"| GFG
-
-    subgraph CI ["🔁 CI — ci.yml"]
-        direction TB
-        CI_1["✅ Testes\nmvn clean test"]
-        CI_2["📦 Build\nmvn clean package"]
-        CI_3["🔍 Terraform\nfmt · init · validate"]
-        CI_1 --> CI_2 --> CI_3
-    end
-
-    subgraph GFG ["🛡️ GitFlow Guard — gitflow-guard.yml"]
-        direction TB
-        GFG_1["Valida branch de origem\ne destino do PR"]
-        GFG_OK(["✅ Merge permitido"])
-        GFG_FAIL(["❌ Merge bloqueado"])
-        GFG_1 -->|"branch → develop\nou develop → main"| GFG_OK
-        GFG_1 -->|"fluxo inválido"| GFG_FAIL
-    end
-
-    GFG_OK -->|"merge em develop\n+ acionamento manual"| DD
-    GFG_OK -->|"merge em main\nou manual"| DP
-
-    subgraph DD ["🚀 Deploy Dev — deploy-dev.yml"]
-        direction TB
-        DD_1["📦 Build\nmvn clean package"]
-        DD_2["🔑 AWS credentials\n(Access Key)"]
-        DD_3["🏗️ Terraform\nplan → apply"]
-        DD_1 --> DD_2 --> DD_3
-    end
-
-    subgraph DP ["🚀 Deploy Prod — deploy-prod.yml"]
-        direction TB
-        DP_1["✅ Testes + Build\nmvn test · package"]
-        DP_2["🔐 AWS credentials\n(OIDC — sem chave longa)"]
-        DP_3["🏗️ Terraform\nplan → apply"]
-        DP_1 --> DP_2 --> DP_3
-    end
-
-    DD_3 -->|"infra provisionada"| AWS_DEV[("☁️ AWS\nambiente dev")]
-    DP_3 -->|"infra provisionada"| AWS_PROD[("☁️ AWS\nambiente prod")]
-```
+![Pipeline CI/CD](diagrams/pipeline.svg)
 
 ## 9.4 Segredos necessários
 
