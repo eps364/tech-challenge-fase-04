@@ -535,7 +535,7 @@ flowchart LR
 
 Vídeo explicativo detalhando a API, suas funcionalidades e como utilizá-la está disponível em:
 
-URL: TODO (inserir link final do vídeo antes da entrega)
+URL: https://youtu.be/y822A41Wiko
 
 # 11. Conclusão
 
