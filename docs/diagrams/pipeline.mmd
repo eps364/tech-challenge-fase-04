@@ -1,0 +1,46 @@
+%% Pipeline CI/CD - Tech Challenge Fase 04
+
+flowchart LR
+    Dev(["👤 Desenvolvedor"])
+
+    Dev -->|"push / PR\n(qualquer branch)"| CI
+    Dev -->|"abre PR"| GFG
+
+    subgraph CI ["🔁 CI — ci.yml"]
+        direction TB
+        CI_1["✅ Testes\nmvn clean test"]
+        CI_2["📦 Build\nmvn clean package"]
+        CI_3["🔍 Terraform\nfmt · init · validate"]
+        CI_1 --> CI_2 --> CI_3
+    end
+
+    subgraph GFG ["🛡️ GitFlow Guard — gitflow-guard.yml"]
+        direction TB
+        GFG_1["Valida branch de origem\ne destino do PR"]
+        GFG_OK(["✅ Merge permitido"])
+        GFG_FAIL(["❌ Merge bloqueado"])
+        GFG_1 -->|"branch → develop\nou develop → main"| GFG_OK
+        GFG_1 -->|"fluxo inválido"| GFG_FAIL
+    end
+
+    GFG_OK -->|"merge em develop\n+ acionamento manual"| DD
+    GFG_OK -->|"merge em main\nou manual"| DP
+
+    subgraph DD ["🚀 Deploy Dev — deploy-dev.yml"]
+        direction TB
+        DD_1["📦 Build\nmvn clean package"]
+        DD_2["🔑 AWS credentials\n(Access Key)"]
+        DD_3["🏗️ Terraform\nplan → apply"]
+        DD_1 --> DD_2 --> DD_3
+    end
+
+    subgraph DP ["🚀 Deploy Prod — deploy-prod.yml"]
+        direction TB
+        DP_1["✅ Testes + Build\nmvn test · package"]
+        DP_2["🔐 AWS credentials\n(OIDC — sem chave longa)"]
+        DP_3["🏗️ Terraform\nplan → apply"]
+        DP_1 --> DP_2 --> DP_3
+    end
+
+    DD_3 -->|"infra provisionada"| AWS_DEV[("☁️ AWS\nambiente dev")]
+    DP_3 -->|"infra provisionada"| AWS_PROD[("☁️ AWS\nambiente prod")]
